@@ -161,3 +161,59 @@ The Puzzle Curator would be responsible for tagging each word — category (Hive
 - **Fill-in-the-blank** — part of the word is shown, player fills in the rest
 
 These probably won't stick to a fixed 5-letter format, so they'll need their own input/validation handling separate from the standard grid — something we'll flesh out more once we get to wireframes.
+
+---
+
+## 4. Reward System (Product Side)
+
+### 4.1 Weekly HBD Pool — Qualification
+
+To qualify for the weekly HBD prize pool, a player needs to solve **at least 5 out of that week's 7 daily puzzles**.
+
+If someone solves fewer than 5, they just don't qualify for the HBD pool that week — their streak and any LINGO tokens they earned aren't affected, this rule only gates the HBD pool specifically.
+
+### 4.2 Stacking Multipliers
+
+These stack on top of a qualifying player's share of the pool:
+
+| Multiplier | Condition |
+|---|---|
+| **2×** | Top 10 fastest solvers on a given day (see 4.3 for exactly how we're measuring "fastest") |
+| **1.5×** | Solved all 7 puzzles that week (perfect week) |
+| **1.25×** | Kept a qualifying streak for 4+ consecutive weeks |
+
+So in theory, someone could stack all three — perfect week, 4+ week streak, and top 10 fastest on a given day — and get all multipliers applied to their share. We still need to lock down with Laura whether these stack additively or multiplicatively, since that changes the actual payout math.
+
+### 4.3 Defining "Fastest Solver"
+
+Since this drives a real reward (the 2× multiplier), it needs to be unambiguous for whoever's building it:
+
+- Timer **starts** the moment the player submits their first guess for the day (not when they open the app — didn't want to punish someone who opens the app, thinks for a bit, then guesses)
+- Timer **stops** the moment they submit the guess that solves it
+- No pausing — once it starts, it just runs
+- This has to be tracked server-side, not client-side, since it directly affects real money (HBD) and needs to be tamper-proof
+
+### 4.4 Daily LINGO Token — What It's Actually For
+
+Players earn LINGO daily just by solving the puzzle. Important distinction: we're not treating this token as having a guaranteed cash value — it's meant for in-game utility:
+
+- **Hints** — spend LINGO to reveal a letter or narrow things down
+- **Streak shield** — spend LINGO to protect your streak if you miss a day
+- **Theme voting** — spend LINGO to have a say in upcoming weekly themes
+
+### 4.5 A Note on Funding
+
+A few things worth being upfront about here:
+
+- **DHF grants** are not something we're relying on to fund the HBD pool. Grants are competitive and slow to secure, so we're treating this as a "maybe later" option, not part of the actual funding plan.
+- **NFTs** aren't detailed in this doc yet. Before we commit to "cosmetic NFT sales" as a revenue source, we need a clear answer to what exactly we'd be selling — a placeholder idea isn't enough to build against.
+- **LINGO token issuance and liquidity** still needs to be worked out with Laura before we finalize it. We're flagging this as an open item that needs alignment, not something already decided.
+
+---
+
+## Status
+
+- [x] Write product overview & goals + define user roles (player, admin/puzzle-curator)
+- [x] Spec the core game mechanics — one shared daily puzzle, guess limit, Wordle-style feedback, and word/answer format
+- [x] Define weekly progression & themes
+- [x] Design the reward system (product side) — weekly HBD pool qualification + stacking multipliers, daily LINGO token utility
