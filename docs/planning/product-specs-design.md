@@ -83,11 +83,12 @@ Focused specifically on content — creates or selects the daily word, builds ou
   - Easy week → 7 guesses
   - Normal week → 6 guesses
   - Hard/theme week → 5 guesses
+- Since LINGO is one shared global puzzle, every player gets the same guess limit as everyone else on any given day — the variation (5–7) happens day-to-day based on difficulty tier, never player-to-player
 
 ### 2.3 Feedback System (Wordle-style)
 
 -  Green — right letter, right position
--  Yellow — right letter, wrong position
+-  Yellow — right letter, wrong spot
 -  Gray — letter isn't in the word
 
 This keeps the game skill-based rather than random — each guess narrows things down logically instead of relying on chance.
