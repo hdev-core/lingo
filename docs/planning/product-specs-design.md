@@ -210,10 +210,3 @@ A few things worth being upfront about here:
 - **LINGO token issuance and liquidity** still needs to be worked out with Laura before we finalize it. We're flagging this as an open item that needs alignment, not something already decided.
 
 ---
-
-## Status
-
-- [x] Write product overview & goals + define user roles (player, admin/puzzle-curator)
-- [x] Spec the core game mechanics — one shared daily puzzle, guess limit, Wordle-style feedback, and word/answer format
-- [x] Define weekly progression & themes
-- [x] Design the reward system (product side) — weekly HBD pool qualification + stacking multipliers, daily LINGO token utility
