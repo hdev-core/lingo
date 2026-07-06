@@ -83,11 +83,12 @@ Focused specifically on content — creates or selects the daily word, builds ou
   - Easy week → 7 guesses
   - Normal week → 6 guesses
   - Hard/theme week → 5 guesses
+- Since LINGO is one shared global puzzle, every player gets the same guess limit as everyone else on any given day — the variation (5–7) happens day-to-day based on difficulty tier, never player-to-player
 
 ### 2.3 Feedback System (Wordle-style)
 
 -  Green — right letter, right position
--  Yellow — right letter, wrong position
+-  Yellow — right letter, wrong spot
 -  Gray — letter isn't in the word
 
 This keeps the game skill-based rather than random — each guess narrows things down logically instead of relying on chance.
@@ -127,7 +128,92 @@ A few decisions here directly shape what Laura needs to build, so worth syncing 
 
 ---
 
+## 3. Weekly Progression & Themes
+
+### 3.1 Difficulty Ramp (Monday → Weekend)
+
+The idea is for the week to gradually get harder as it goes:
+
+- **Monday–Tuesday**: easiest words, everyday vocabulary, standard 5-letter format — a good on-ramp for the week
+- **Wednesday–Thursday**: medium difficulty, more Hive/Web3 terms start showing up
+- **Friday–Sunday**: hardest puzzles of the week, more Hive-heavy vocabulary, and this is also where we'd introduce the special formats like anagrams or fill-in-the-blank
+
+One thing worth being explicit about here (Dr. Farhat flagged this): even though the guess limit shifts by day (5–7 depending on difficulty), it's still **one shared global puzzle** — so every player gets the exact same number of guesses as everyone else *on that day*. The difference is day-to-day, not player-to-player. Nobody's getting an easier or harder version than anyone else.
+
+### 3.2 Weekly Themes
+
+Each week can run with a theme that shapes which words show up:
+
+- **DeFi Week** — liquidity, staking, yield, protocol, delegate, witness
+- **NFT Week** — mint, rarity, collection, royalty, metadata
+- **General Week** — mixed, everyday words, less Hive-specific
+- **Advanced Week** — deeper, more technical crypto terms for players who are already familiar with the space
+
+### 3.3 Vocabulary Sets
+
+We're basically working with two pools: Hive/Web3 terms and normal English words. Early in the week (and during "General" weeks) it leans more toward normal words so it's not intimidating. As the week goes on, or during a themed week like DeFi/NFT, it shifts more toward the Hive-specific vocabulary.
+
+The Puzzle Curator would be responsible for tagging each word — category (Hive/Web3 vs. general) and difficulty — so we can actually pull the right word for the right day/theme instead of doing it manually every time.
+
+### 3.4 Harder Formats (Later in the Week / Theme Weeks)
+
+- **Anagram mode** — scrambled letters, player has to unscramble
+- **Fill-in-the-blank** — part of the word is shown, player fills in the rest
+
+These probably won't stick to a fixed 5-letter format, so they'll need their own input/validation handling separate from the standard grid — something we'll flesh out more once we get to wireframes.
+
+---
+
+## 4. Reward System (Product Side)
+
+### 4.1 Weekly HBD Pool — Qualification
+
+To qualify for the weekly HBD prize pool, a player needs to solve **at least 5 out of that week's 7 daily puzzles**.
+
+If someone solves fewer than 5, they just don't qualify for the HBD pool that week — their streak and any LINGO tokens they earned aren't affected, this rule only gates the HBD pool specifically.
+
+### 4.2 Stacking Multipliers
+
+These stack on top of a qualifying player's share of the pool:
+
+| Multiplier | Condition |
+|---|---|
+| **2×** | Top 10 fastest solvers on a given day (see 4.3 for exactly how we're measuring "fastest") |
+| **1.5×** | Solved all 7 puzzles that week (perfect week) |
+| **1.25×** | Kept a qualifying streak for 4+ consecutive weeks |
+
+So in theory, someone could stack all three — perfect week, 4+ week streak, and top 10 fastest on a given day — and get all multipliers applied to their share. We still need to lock down with Laura whether these stack additively or multiplicatively, since that changes the actual payout math.
+
+### 4.3 Defining "Fastest Solver"
+
+Since this drives a real reward (the 2× multiplier), it needs to be unambiguous for whoever's building it:
+
+- Timer **starts** the moment the player submits their first guess for the day (not when they open the app — didn't want to punish someone who opens the app, thinks for a bit, then guesses)
+- Timer **stops** the moment they submit the guess that solves it
+- No pausing — once it starts, it just runs
+- This has to be tracked server-side, not client-side, since it directly affects real money (HBD) and needs to be tamper-proof
+
+### 4.4 Daily LINGO Token — What It's Actually For
+
+Players earn LINGO daily just by solving the puzzle. Important distinction: we're not treating this token as having a guaranteed cash value — it's meant for in-game utility:
+
+- **Hints** — spend LINGO to reveal a letter or narrow things down
+- **Streak shield** — spend LINGO to protect your streak if you miss a day
+- **Theme voting** — spend LINGO to have a say in upcoming weekly themes
+
+### 4.5 A Note on Funding
+
+A few things worth being upfront about here:
+
+- **DHF grants** are not something we're relying on to fund the HBD pool. Grants are competitive and slow to secure, so we're treating this as a "maybe later" option, not part of the actual funding plan.
+- **NFTs** aren't detailed in this doc yet. Before we commit to "cosmetic NFT sales" as a revenue source, we need a clear answer to what exactly we'd be selling — a placeholder idea isn't enough to build against.
+- **LINGO token issuance and liquidity** still needs to be worked out with Laura before we finalize it. We're flagging this as an open item that needs alignment, not something already decided.
+
+---
+
 ## Status
 
 - [x] Write product overview & goals + define user roles (player, admin/puzzle-curator)
 - [x] Spec the core game mechanics — one shared daily puzzle, guess limit, Wordle-style feedback, and word/answer format
+- [x] Define weekly progression & themes
+- [x] Design the reward system (product side) — weekly HBD pool qualification + stacking multipliers, daily LINGO token utility
