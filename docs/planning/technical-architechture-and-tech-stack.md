@@ -34,7 +34,7 @@ Overall, the estimated operating cost is **approximately $1–6 per month**, wit
 
 The commit-reveal system ensures that the daily puzzle cannot be changed after the game begins while keeping the answer hidden until the end of the day. The process is divided into four stages: commit, guess validation, reveal, and public verification.
 
-![Commit-reveal flow diagram](./images/commit-reveal-flow.png)
+<img src="./images/commit-reveal-flow.png" alt="Commit-reveal flow diagram" width="400">
 
 *Blue = on-chain step; Green = private backend-only step*
 
