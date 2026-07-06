@@ -128,7 +128,36 @@ A few decisions here directly shape what Laura needs to build, so worth syncing 
 
 ---
 
-## Status
+## 3. Weekly Progression & Themes
 
-- [x] Write product overview & goals + define user roles (player, admin/puzzle-curator)
-- [x] Spec the core game mechanics — one shared daily puzzle, guess limit, Wordle-style feedback, and word/answer format
+### 3.1 Difficulty Ramp (Monday → Weekend)
+
+The idea is for the week to gradually get harder as it goes:
+
+- **Monday–Tuesday**: easiest words, everyday vocabulary, standard 5-letter format — a good on-ramp for the week
+- **Wednesday–Thursday**: medium difficulty, more Hive/Web3 terms start showing up
+- **Friday–Sunday**: hardest puzzles of the week, more Hive-heavy vocabulary, and this is also where we'd introduce the special formats like anagrams or fill-in-the-blank
+
+One thing worth being explicit about here (Dr. Farhat flagged this): even though the guess limit shifts by day (5–7 depending on difficulty), it's still **one shared global puzzle** — so every player gets the exact same number of guesses as everyone else *on that day*. The difference is day-to-day, not player-to-player. Nobody's getting an easier or harder version than anyone else.
+
+### 3.2 Weekly Themes
+
+Each week can run with a theme that shapes which words show up:
+
+- **DeFi Week** — liquidity, staking, yield, protocol, delegate, witness
+- **NFT Week** — mint, rarity, collection, royalty, metadata
+- **General Week** — mixed, everyday words, less Hive-specific
+- **Advanced Week** — deeper, more technical crypto terms for players who are already familiar with the space
+
+### 3.3 Vocabulary Sets
+
+We're basically working with two pools: Hive/Web3 terms and normal English words. Early in the week (and during "General" weeks) it leans more toward normal words so it's not intimidating. As the week goes on, or during a themed week like DeFi/NFT, it shifts more toward the Hive-specific vocabulary.
+
+The Puzzle Curator would be responsible for tagging each word — category (Hive/Web3 vs. general) and difficulty — so we can actually pull the right word for the right day/theme instead of doing it manually every time.
+
+### 3.4 Harder Formats (Later in the Week / Theme Weeks)
+
+- **Anagram mode** — scrambled letters, player has to unscramble
+- **Fill-in-the-blank** — part of the word is shown, player fills in the rest
+
+These probably won't stick to a fixed 5-letter format, so they'll need their own input/validation handling separate from the standard grid — something we'll flesh out more once we get to wireframes.
