@@ -243,3 +243,54 @@ This is the main organic growth lever for LINGO, so it needs to be as close to o
 - **Why it matters technically:** Since this creates an actual Hive post, it should reuse the same Keychain-based flow already used for guesses/login, so the player isn't asked to re-authenticate separately just to share
 
 ---
+
+## 6. Core Features List + MVP Cut
+
+### 6.1 Core Features (Full Vision)
+
+- One shared daily puzzle with Wordle-style feedback
+- Guess limit that varies by difficulty tier (5–7)
+- Weekly difficulty ramp + themed weeks (DeFi, NFT, General, Advanced)
+- Harder puzzle formats (anagrams, fill-in-the-blank)
+- Streak system with visual tracking and milestones
+- Hint system (spend LINGO)
+- Streak shield (spend LINGO)
+- Theme voting (spend LINGO)
+- Weekly HBD prize pool with qualification + stacking multipliers
+- Daily LINGO token issuance
+- One-click share-to-Hive
+- Leaderboard (daily fastest solvers + weekly rankings)
+- Commit-reveal system for daily answer integrity
+- Cosmetic NFTs (visual customization, no gameplay effect)
+- Sponsored theme weeks (Hive projects sponsor a themed week)
+- DHF grant funding for the prize pool
+- Premium HBD-purchasable features
+
+### 6.2 MVP Cut — What Ships in v1
+
+To keep the first version realistic and buildable, the MVP focuses only on what's needed to prove the core loop works:
+
+**In v1:**
+- One shared daily puzzle + Wordle-style feedback
+- Fixed guess limit (start with a flat 6, hold off on the 5–7 difficulty-based variation until the core loop is validated)
+- Basic weekly theme rotation (can start with 1–2 themes, doesn't need the full theme catalog on day one)
+- Streak tracking (basic version, no shield yet)
+- Weekly HBD pool with the ≥5/7 qualification rule (multipliers can be simplified or introduced in a later phase if needed to reduce initial payout-engine complexity)
+- Daily LINGO token issuance
+- One-click share-to-Hive
+- Basic leaderboard (daily + weekly)
+- Commit-reveal system (this is core to trust, not optional even for MVP)
+
+**Deferred to later phases (explicitly out of v1):**
+- Hint system (spend LINGO) — nice-to-have, not core to proving the loop
+- Streak shield
+- Theme voting
+- Harder puzzle formats (anagrams, fill-in-the-blank)
+- Cosmetic NFTs
+- Sponsored theme weeks
+- DHF grant funding
+- Premium HBD-purchasable features
+
+The reasoning here: v1 should prove that people will play daily and that the reward loop (HBD pool + LINGO token) actually works end-to-end. Everything deferred adds depth and monetization but isn't needed to validate that core hypothesis — and several of them (NFTs, DHF, sponsorships) were already flagged as not concrete enough to commit to yet.
+
+---
