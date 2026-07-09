@@ -210,3 +210,36 @@ A few things worth being upfront about here:
 - **LINGO token issuance and liquidity** still needs to be worked out with Laura before we finalize it. We're flagging this as an open item that needs alignment, not something already decided.
 
 ---
+
+## 5. Streak, Hint, and One-Click Share-to-Hive UX
+
+### 5.1 Streak UX
+
+The streak is meant to be the thing that makes players come back daily, so it needs to feel visible and rewarding without being annoying.
+
+- **Where it shows up:** Streak count is visible right on the main puzzle screen (not buried in a profile page) so players see it every time they open the app
+- **Visual treatment:** A simple counter with a small flame or similar icon next to it — something that feels good to watch grow, similar to how Duolingo or Snapchat handle streaks
+- **When it updates:** Right after a player solves (or fails) that day's puzzle
+- **Missed a day:** If a player doesn't play, their streak resets to 0 the next day — unless they used a streak shield (see hints below) to protect it
+- **Milestone moments:** Small callouts at meaningful streak lengths (e.g., 7 days, 30 days) — nothing complicated for v1, just a short congratulatory message/animation to make the milestone feel earned
+
+### 5.2 Hint UX
+
+Hints are spent using LINGO tokens (covered in Section 4.4), so the flow needs to make that cost clear before a player commits to using one.
+
+- **Where hints live:** A hint button next to the guess input, visible but not distracting from the main puzzle grid
+- **Before using a hint:** Player sees how many LINGO tokens the hint will cost and their current balance, so there's no surprise deduction
+- **What a hint does:** Reveals one correct letter in its correct position (exact hint mechanics — e.g., which letter gets revealed — can be refined later, but this is the baseline behavior for v1)
+- **Limit:** One hint per day per puzzle, to keep the core "fewest guesses" scoring meaningful and stop hints from trivializing the game
+- **Streak shield as a hint-adjacent feature:** Also purchasable with LINGO, used proactively (before a missed day) or possibly retroactively within a short grace window (exact grace-period rule to be confirmed) to protect an existing streak from resetting
+
+### 5.3 Share-to-Hive UX
+
+This is the main organic growth lever for LINGO, so it needs to be as close to one-click as possible.
+
+- **When it appears:** Immediately after a player finishes their puzzle attempt (solved or not), on the results screen
+- **What gets shared:** A simple, spoiler-free grid (like Wordle's colored-square share format) showing the player's guess pattern without revealing the actual word, plus their score/streak
+- **The action:** A single "Share to Hive" button that posts the result directly as a Hive post — no copy-pasting, no leaving the app
+- **Why it matters technically:** Since this creates an actual Hive post, it should reuse the same Keychain-based flow already used for guesses/login, so the player isn't asked to re-authenticate separately just to share
+
+---
