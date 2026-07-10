@@ -120,7 +120,7 @@ Rough logic: solving in 1 guess gives the highest score, solving in 6 gives the 
 
 ### 2.7 What This Means for the Technical Side
 
-A few decisions here directly shape what Laura needs to build, so requires early alignment:
+A few decisions here directly shape what Laura needs to build, so it requires early alignment:
 
 - Guess limits (5–7 depending on tier) and daily reset timing → affects commit-reveal timing and the `daily_puzzles` / `guesses` schema
 - One-attempt-per-account rule → ties into anti-cheat / one-account-per-solve logic
@@ -202,7 +202,7 @@ Since this drives a real reward (the 2× multiplier), it needs to be unambiguous
 ### 4.4 Daily LINGO Token — What It's Actually For
 
 Players earn LINGO daily just by solving the puzzle. Important distinction: we're not treating this token as having a guaranteed cash value — it's meant for in-game utility:
-A fixed daily LINGO token pool of approximately 500 tokens (Laura's initial technical proposal, not yet confirmed as final) is distributed among that day's successful solvers. The exact per-solve split is still being finalized with Laura.
+A daily LINGO token pool is planned to be distributed among successful solvers. Laura's current technical proposal suggests approximately 500 LINGO tokens per day, but the final amount and distribution mechanism will be confirmed during the reward economy finalization phase.
 
 - **Hints** — spend LINGO to reveal a letter or narrow things down
 - **Streak shield** — spend LINGO to protect your streak if you miss a day
