@@ -21,7 +21,7 @@ LINGO is a daily competitive word puzzle built on Hive, inspired by Wordle but b
 - real blockchain rewards — HBD pool + LINGO token
 - social sharing and leaderboard competition
 
-Everyone plays the same word each day and tries to solve it in the fewest guesses possible. Performance is tracked through streaks and weekly rankings, and every guess is recorded on-chain, with the daily answer locked ahead of time using a commit-reveal scheme so it can't be leaked or tampered with.
+Everyone plays the same word each day and tries to solve it in the fewest guesses possible. Performance is tracked through streaks and weekly rankings, player activity and puzzle results are securely recorded to support transparency, leaderboard accuracy, and reward distribution, with the daily answer locked ahead of time using a commit-reveal scheme so it can't be leaked or tampered with.
 
 ### 1.2 Core Product Vision
 
@@ -83,6 +83,7 @@ Focused specifically on content — creates or selects the daily word, builds ou
   - Easy week → 7 guesses
   - Normal week → 6 guesses
   - Hard/theme week → 5 guesses
+  - For the full product vision, guess limits may vary by difficulty tier as described above. However, the MVP launches with a fixed 6-guess system across all days, to simplify balancing and validate the core gameplay loop before introducing that added complexity.
 - Since LINGO is one shared global puzzle, every player gets the same guess limit as everyone else on any given day — the variation (5–7) happens day-to-day based on difficulty tier, never player-to-player
 
 ### 2.3 Feedback System (Wordle-style)
@@ -125,6 +126,7 @@ A few decisions here directly shape what Laura needs to build, so worth syncing 
 - One-attempt-per-account rule → ties into anti-cheat / one-account-per-solve logic
 - Scoring + streak + multiplier logic → feeds directly into the reward/payout engine (HBD pool computation, LINGO token issuance)
 - Variable word lengths for harder tiers → affects schema design and guess validation
+- The product rules defined throughout this document (scoring, streak, multipliers, qualification) act as the source of truth for Laura's payout engine implementation
 
 ---
 
@@ -174,15 +176,19 @@ If someone solves fewer than 5, they just don't qualify for the HBD pool that we
 
 ### 4.2 Stacking Multipliers
 
-These stack on top of a qualifying player's share of the pool:
+These stack **additively** on top of a qualifying player's base weekly pool share — confirmed with Laura, since this determines exactly how the payout engine calculates final rewards.
 
-| Multiplier | Condition |
-|---|---|
-| **2×** | Top 10 fastest solvers on a given day (see 4.3 for exactly how we're measuring "fastest") |
-| **1.5×** | Solved all 7 puzzles that week (perfect week) |
-| **1.25×** | Kept a qualifying streak for 4+ consecutive weeks |
+| Multiplier | Condition | Bonus |
+|---|---|---|
+| **Fast Solver** | Top 10 fastest solvers on a given day (see 4.3) | +100% (2×) |
+| **Perfect Week** | Solved all 7 puzzles that week | +50% (1.5×) |
+| **Loyalty** | Qualifying streak of 4+ consecutive weeks | +25% (1.25×) |
 
-So in theory, someone could stack all three — perfect week, 4+ week streak, and top 10 fastest on a given day — and get all multipliers applied to their share. We still need to lock down with Laura whether these stack additively or multiplicatively, since that changes the actual payout math.
+**Formula:** `Final reward weight = base_share × (1 + bonus_1 + bonus_2 + bonus_3)`
+
+**Example:** a player hitting all three earns `base_share × (1 + 1 + 0.5 + 0.25)` = `base_share × 2.75` — a maximum of 2.75× their base share.
+
+Additive stacking was chosen because it keeps payouts linear and easy for any player to verify by hand against the published rules, rather than compounding unpredictably.
 
 ### 4.3 Defining "Fastest Solver"
 
@@ -196,6 +202,7 @@ Since this drives a real reward (the 2× multiplier), it needs to be unambiguous
 ### 4.4 Daily LINGO Token — What It's Actually For
 
 Players earn LINGO daily just by solving the puzzle. Important distinction: we're not treating this token as having a guaranteed cash value — it's meant for in-game utility:
+A fixed daily LINGO token pool of approximately 500 tokens is distributed among that day's successful solvers (exact per-solve split still being finalized with Laura).
 
 - **Hints** — spend LINGO to reveal a letter or narrow things down
 - **Streak shield** — spend LINGO to protect your streak if you miss a day
@@ -294,3 +301,146 @@ To keep the first version realistic and buildable, the MVP focuses only on what'
 The reasoning here: v1 should prove that people will play daily and that the reward loop (HBD pool + LINGO token) actually works end-to-end. Everything deferred adds depth and monetization but isn't needed to validate that core hypothesis — and several of them (NFTs, DHF, sponsorships) were already flagged as not concrete enough to commit to yet.
 
 ---
+
+## 7. Primary User Flows & Wireframe Planning
+
+### 7.1 Primary User Flow
+
+The main goal here is to keep friction low so playing daily actually becomes a habit. The player should move from logging in to playing, sharing, and checking their rewards without the flow feeling clunky.
+
+**Main flow:**
+Hive Keychain login → Daily puzzle → Submit guesses → View result → Share to Hive → Track streak & leaderboard → Receive weekly rewards
+
+**Broken down in more detail:**
+
+**1. Authentication**
+Player opens LINGO and connects using Hive Keychain. Their identity gets verified through their Hive account, and once logged in, they're taken straight to the daily puzzle — no extra steps in between.
+
+**2. Daily Puzzle Gameplay**
+Player sees the one puzzle shared by everyone that day. The screen shows their current streak, attempts remaining, the guess grid, and an interactive keyboard (plus a hint button once that feature exists post-MVP). After each guess, they get Wordle-style feedback — green for correct letter and position, yellow for correct letter wrong position, gray for not in the word at all.
+
+**3. Results & Sharing**
+Once they finish (solved or not), they see their completion status, score, guess count, updated streak, and LINGO tokens earned. From here they can share a spoiler-free result directly to Hive.
+
+**4. Progress Tracking**
+Player can check the daily ranking, weekly leaderboard, their current streak, and how close they are to qualifying for that week's reward.
+
+**5. Weekly Reward Flow**
+At the end of each week, qualifying players get their share of the HBD pool, and that history shows up in their wallet/rewards section.
+
+### 7.2 Key Screens (Wireframe Planning)
+
+These are the core screens needed for the MVP experience. Actual visual wireframes (Figma or similar) can be attached separately once drafted — for now, here's what each screen needs to contain.
+
+**Screen 1 — Daily Puzzle Screen**
+*Purpose: main gameplay interface*
+- Header: LINGO logo, current streak counter, user profile icon
+- Puzzle area: word grid, attempt counter
+- Keyboard: interactive letter buttons with color feedback after each guess
+- Actions: submit guess, hint button (future feature, not MVP)
+
+**Screen 2 — Results & Share Screen**
+*Purpose: show performance, encourage sharing*
+- Puzzle completion message
+- Guess pattern visualization (spoiler-free)
+- Score summary + streak update
+- LINGO reward earned
+- "Share to Hive" button
+
+**Screen 3 — Leaderboard Screen**
+*Purpose: drive competition*
+- Daily ranking: fastest solvers, daily scores
+- Weekly ranking: total performance, reward qualification status
+- Player's own position highlighted
+
+**Screen 4 — Profile & Streak Screen**
+*Purpose: track player progress over time*
+- Current streak, longest streak
+- Solve history
+- Achievement milestones
+- LINGO token balance
+
+**Screen 5 — Wallet & Rewards Screen**
+*Purpose: show reward status clearly*
+- Weekly HBD qualification status (e.g., "3/5 solved — 2 more to qualify")
+- Previous rewards history
+- LINGO token balance + utility options (once spend features exist)
+
+**Screen 6 — Weekly Theme Screen**
+*Purpose: introduce the week's challenge*
+- Current theme + short explanation
+- Vocabulary category focus
+- Space reserved for future theme-voting functionality (post-MVP)
+
+### 7.3 Notes for Technical Handoff
+
+- The login → play → share flow depends on Keychain integration working smoothly end-to-end — worth testing this specific path early with Laura since it touches nearly every screen
+- The Wallet & Rewards screen needs live data from the payout engine, so its final layout may depend on what fields Laura's backend can cleanly expose — to be confirmed together
+
+---
+
+## 8. V1 Out-of-Scope List & Prioritized Product Backlog
+
+### 8.1 V1 Out-of-Scope
+
+To keep the MVP focused on validating the core daily puzzle and reward loop, the following are intentionally left out of the first release:
+
+- **NFTs** — cosmetic NFT rewards, NFT-based customization
+- **Sponsorship system** — sponsored weekly themes, external partner integrations
+- **DHF funding** — no dependency on Hive DHF grants for the initial reward pool
+- **Premium features** — paid HBD upgrades, premium player advantages
+- **Advanced gameplay formats** — anagram mode, fill-in-the-blank mode
+- **Difficulty-based guess variation (5–7)** — MVP launches with a flat 6-guess limit across all days (see Section 2.2)
+- **Advanced token utilities** — theme voting, streak shield, and any additional token sinks beyond core mechanics
+
+These all stay part of the long-term vision but aren't required to prove the core loop — daily puzzle + reward system — is actually engaging on its own.
+
+*Note: the weekly HBD stacking multipliers (fast solver, perfect week, loyalty) themselves ARE included in v1 — they're core to how the reward pool is calculated (see Section 4.2) — only the features listed above are deferred.*
+
+### 8.2 Prioritized Feature Backlog
+
+Prioritized by how essential each feature is to launching and validating LINGO's core loop.
+
+**Priority 0 — MVP (Required)**
+
+| Feature | Reason |
+|---|---|
+| Hive Keychain login | Required for identity and Hive integration |
+| Daily shared puzzle | Core product experience |
+| Wordle-style feedback | Main gameplay mechanic |
+| Guess limitation | Defines challenge and fairness |
+| Score calculation | Enables ranking and rewards |
+| Streak tracking | Drives daily retention |
+| Daily and weekly leaderboard | Creates competition |
+| Weekly HBD reward pool + multipliers | Main incentive mechanism |
+| Daily LINGO token rewards | Introduces token utility |
+| Share-to-Hive | Supports organic growth |
+| Commit-reveal system | Ensures fairness and trust |
+
+**Priority 1 — Post-MVP**
+
+| Feature | Reason |
+|---|---|
+| Hint system | Adds real LINGO utility |
+| Streak shield | Improves player retention |
+| Theme voting | Increases community participation |
+| Difficulty-based guess variation | Adds progression depth |
+| Advanced puzzle formats | Adds gameplay variety |
+| Detailed profile statistics | Improves engagement |
+
+**Priority 2 — Future Expansion**
+
+| Feature | Reason |
+|---|---|
+| Cosmetic NFTs | Additional engagement layer |
+| Sponsored themes | Partnership opportunities |
+| Premium features | Future monetization |
+| DHF integration | Possible ecosystem funding |
+| Advanced token economy | Long-term sustainability |
+
+### 8.3 Product Spec Summary
+
+Pulling this together: LINGO's v1 is a daily, one-puzzle-per-day word game on Hive, where players log in via Keychain, solve a shared puzzle with Wordle-style feedback (flat 6-guess limit), build a streak, and qualify for a weekly HBD pool by solving at least 5 of 7 puzzles that week — with fast-solver, perfect-week, and loyalty multipliers applied additively on top. Every solve also earns LINGO tokens (spending features deferred post-MVP). Players can share results directly to Hive, and track their standing on a simple daily/weekly leaderboard. The daily answer is protected with a commit-reveal scheme so its integrity is publicly verifiable. The whole system is intentionally lean for v1 — the goal is proving people will play daily and that the core reward loop actually works, before layering in deeper monetization and engagement features.
+
+---
+
