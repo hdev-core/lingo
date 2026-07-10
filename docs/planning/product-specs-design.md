@@ -201,12 +201,12 @@ Since this drives a real reward (the 2× multiplier), it needs to be unambiguous
 
 ### 4.4 Daily LINGO Token — What It's Actually For
 
-Players earn LINGO daily just by solving the puzzle. Important distinction: we're not treating this token as having a guaranteed cash value — it's meant for in-game utility:
-A daily LINGO token pool is planned to be distributed among successful solvers. Laura's current technical proposal suggests approximately 500 LINGO tokens per day, but the final amount and distribution mechanism will be confirmed during the reward economy finalization phase.
+Players earn LINGO daily by solving the puzzle. The token is designed for in-game utility rather than guaranteed cash value. A fixed daily LINGO token pool of approximately 500 tokens is distributed among that day's successful solvers. The exact per-solve distribution split will be finalized as part of the reward distribution logic.
 
-- **Hints** — spend LINGO to reveal a letter or narrow things down
-- **Streak shield** — spend LINGO to protect your streak if you miss a day
-- **Theme voting** — spend LINGO to have a say in upcoming weekly themes
+LINGO can be spent on:
+- **Hints** — spend LINGO to reveal a letter or narrow down possible answers
+- **Streak shield** — spend LINGO to protect an existing streak if a day is missed
+- **Theme voting** — spend LINGO to participate in choosing upcoming weekly themes
 
 ### 4.5 A Note on Funding
 
