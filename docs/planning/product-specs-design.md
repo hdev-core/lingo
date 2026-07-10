@@ -2,7 +2,7 @@
 
 **Track:** Planning 1 of 2 (Product / Design)
 **Owner:** Intissar Soulaiman
-**Status:** In Progress
+**Status:** Complete
 **Related card:** Planning: Product Specs & Design Plan (LINGO)
 **Pairs with:** Planning: Technical Architecture & Tech Stack (LINGO)
 
@@ -105,7 +105,7 @@ This keeps the game skill-based rather than random — each guess narrows things
 
 Score is based on a combination of:
 - number of guesses used (fewer = higher score)
-- streak multiplier
+- applicable reward multipliers
 - difficulty tier for that day/week
 
 Rough logic: solving in 1 guess gives the highest score, solving in 6 gives the lowest "pass" score, and failing to solve means no reward and the streak resets.
@@ -120,7 +120,7 @@ Rough logic: solving in 1 guess gives the highest score, solving in 6 gives the 
 
 ### 2.7 What This Means for the Technical Side
 
-A few decisions here directly shape what Laura needs to build, so worth syncing on early:
+A few decisions here directly shape what Laura needs to build, so requires early alignment:
 
 - Guess limits (5–7 depending on tier) and daily reset timing → affects commit-reveal timing and the `daily_puzzles` / `guesses` schema
 - One-attempt-per-account rule → ties into anti-cheat / one-account-per-solve logic
@@ -194,7 +194,7 @@ Additive stacking was chosen because it keeps payouts linear and easy for any pl
 
 Since this drives a real reward (the 2× multiplier), it needs to be unambiguous for whoever's building it:
 
-- Timer **starts** the moment the player submits their first guess for the day (not when they open the app — didn't want to punish someone who opens the app, thinks for a bit, then guesses)
+- Timer **starts** the moment the player submits their first guess for the day (not when they open the app — this avoids penalizing players who take time to think before their first guess)
 - Timer **stops** the moment they submit the guess that solves it
 - No pausing — once it starts, it just runs
 - This has to be tracked server-side, not client-side, since it directly affects real money (HBD) and needs to be tamper-proof
@@ -202,7 +202,7 @@ Since this drives a real reward (the 2× multiplier), it needs to be unambiguous
 ### 4.4 Daily LINGO Token — What It's Actually For
 
 Players earn LINGO daily just by solving the puzzle. Important distinction: we're not treating this token as having a guaranteed cash value — it's meant for in-game utility:
-A fixed daily LINGO token pool of approximately 500 tokens is distributed among that day's successful solvers (exact per-solve split still being finalized with Laura).
+A fixed daily LINGO token pool of approximately 500 tokens (Laura's initial technical proposal, not yet confirmed as final) is distributed among that day's successful solvers. The exact per-solve split is still being finalized with Laura.
 
 - **Hints** — spend LINGO to reveal a letter or narrow things down
 - **Streak shield** — spend LINGO to protect your streak if you miss a day
@@ -440,7 +440,7 @@ Prioritized by how essential each feature is to launching and validating LINGO's
 
 ### 8.3 Product Spec Summary
 
-Pulling this together: LINGO's v1 is a daily, one-puzzle-per-day word game on Hive, where players log in via Keychain, solve a shared puzzle with Wordle-style feedback (flat 6-guess limit), build a streak, and qualify for a weekly HBD pool by solving at least 5 of 7 puzzles that week — with fast-solver, perfect-week, and loyalty multipliers applied additively on top. Every solve also earns LINGO tokens (spending features deferred post-MVP). Players can share results directly to Hive, and track their standing on a simple daily/weekly leaderboard. The daily answer is protected with a commit-reveal scheme so its integrity is publicly verifiable. The whole system is intentionally lean for v1 — the goal is proving people will play daily and that the core reward loop actually works, before layering in deeper monetization and engagement features.
+Pulling this together: LINGO's v1 is a daily, one-puzzle-per-day word game on Hive, where players log in via Keychain, solve a shared puzzle with Wordle-style feedback (flat 6-guess limit), build a streak, and qualify for a weekly HBD pool by solving at least 5 of 7 puzzles that week — with fast-solver, perfect-week, and loyalty multipliers applied additively on top. Every solve also earns LINGO tokens (spending features deferred post-MVP). Players can share results directly to Hive, and track their standing on a simple daily/weekly leaderboard. The daily answer is protected with a commit-reveal scheme so its integrity is publicly verifiable. The whole system is intentionally lean for v1 — the goal is proving people will play daily and that the core reward loop performs as designed, before layering in deeper monetization and engagement features.
 
 ---
 
