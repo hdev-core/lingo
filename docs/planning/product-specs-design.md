@@ -427,6 +427,8 @@ Prioritized by how essential each feature is to launching and validating LINGO's
 | Difficulty-based guess variation | Adds progression depth |
 | Advanced puzzle formats | Adds gameplay variety |
 | Detailed profile statistics | Improves engagement |
+| "Continue with Google" login (auto-provisions a Hive account) | Lowers signup friction for non-crypto-native users; kept as Phase-2 given the lean MVP stack |
+
 
 **Priority 2 — Future Expansion**
 
