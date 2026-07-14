@@ -282,7 +282,7 @@ To keep the first version realistic and buildable, the MVP focuses only on what'
 - Fixed guess limit (start with a flat 6, hold off on the 5–7 difficulty-based variation until the core loop is validated)
 - Basic weekly theme rotation (can start with 1–2 themes, doesn't need the full theme catalog on day one)
 - Streak tracking (basic version, no shield yet)
-- Weekly HBD pool with the ≥5/7 qualification rule (multipliers can be simplified or introduced in a later phase if needed to reduce initial payout-engine complexity)
+- Weekly HBD pool with the ≥5/7 qualification rule and the fast-solver/perfect-week/loyalty multipliers, applied additively (see Section 4.2) — confirmed as part of v1, not deferred
 - Daily LINGO token issuance
 - One-click share-to-Hive
 - Basic leaderboard (daily + weekly)
