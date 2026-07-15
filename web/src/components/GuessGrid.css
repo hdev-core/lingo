@@ -1,0 +1,58 @@
+.guess-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin: var(--space-lg) 0;
+}
+
+.guess-row {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.guess-cell {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  text-transform: uppercase;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.guess-cell--empty {
+  border-color: var(--color-border);
+}
+
+.guess-cell--correct {
+  background-color: var(--feedback-correct);
+  border-color: var(--feedback-correct);
+  color: var(--color-white);
+}
+
+.guess-cell--present {
+  background-color: var(--feedback-present);
+  border-color: var(--feedback-present);
+  color: var(--color-white);
+}
+
+.guess-cell--absent {
+  background-color: var(--feedback-absent);
+  border-color: var(--feedback-absent);
+  color: var(--color-white);
+}
+
+/* Responsive: shrink cells on small screens */
+@media (max-width: 400px) {
+  .guess-cell {
+    width: 42px;
+    height: 42px;
+    font-size: var(--font-size-lg);
+  }
+}

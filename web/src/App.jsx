@@ -1,10 +1,16 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
+import GuessGrid from './components/GuessGrid'
 import './styles/tokens.css'
 import './App.css'
 
 // Placeholder screens — will be built out fully in later feature cards
 function DailyPuzzle() {
-  return <h1>Daily Puzzle</h1>
+  return (
+    <div>
+      <h1>Daily Puzzle</h1>
+      <GuessGrid wordLength={5} maxGuesses={6} guesses={[]} currentGuess="" />
+    </div>
+  )
 }
 
 function Results() {
