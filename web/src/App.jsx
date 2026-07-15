@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
 import './styles/tokens.css'
 import './App.css'
 
@@ -23,17 +23,29 @@ function Wallet() {
   return <h1>Wallet & Rewards</h1>
 }
 
+function NotFound() {
+  return (
+    <div>
+      <h1>404</h1>
+      <p>This page doesn't exist.</p>
+      <NavLink to="/">Back to today's puzzle</NavLink>
+    </div>
+  )
+}
+
 function AppShell() {
+  // NavLink automatically adds an "active" class when the route matches,
+  // so we can style the current page differently in App.css
   return (
     <div className="app-shell">
       <header className="app-header">
         <div className="app-logo">LINGO</div>
         <nav className="app-nav">
-          <Link to="/">Puzzle</Link>
-          <Link to="/results">Results</Link>
-          <Link to="/leaderboard">Leaderboard</Link>
-          <Link to="/profile">Profile</Link>
-          <Link to="/wallet">Wallet</Link>
+          <NavLink to="/" end>Puzzle</NavLink>
+          <NavLink to="/results">Results</NavLink>
+          <NavLink to="/leaderboard">Leaderboard</NavLink>
+          <NavLink to="/profile">Profile</NavLink>
+          <NavLink to="/wallet">Wallet</NavLink>
         </nav>
       </header>
 
@@ -44,6 +56,8 @@ function AppShell() {
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/wallet" element={<Wallet />} />
+          {/* Catch-all: any unmatched route shows the 404 page */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
     </div>

@@ -39,6 +39,11 @@
   background-color: rgba(255, 255, 255, 0.15);
 }
 
+.app-nav a.active {
+  background-color: rgba(255, 255, 255, 0.25);
+  font-weight: 700;
+}
+
 .app-content {
   flex: 1;
   display: flex;
