@@ -16,21 +16,6 @@ function DailyPuzzle() {
   )
 }
 
-function Results() {
-  return <h1>Results & Share</h1>
-}
-
-function Leaderboard() {
-  return <h1>Leaderboard</h1>
-}
-
-function Profile() {
-  return <h1>Profile & Streak</h1>
-}
-
-function Wallet() {
-  return <h1>Wallet & Rewards</h1>
-}
 
 function NotFound() {
   return (
