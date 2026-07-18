@@ -1,5 +1,9 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
 import Puzzle from './components/Puzzle'
+import Results from './components/Results'
+import Leaderboard from './components/Leaderboard'
+import Profile from './components/Profile'
+import Wallet from './components/Wallet'
 import './styles/tokens.css'
 import './App.css'
 
