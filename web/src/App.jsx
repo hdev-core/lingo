@@ -4,6 +4,7 @@ import Results from './components/Results'
 import Leaderboard from './components/Leaderboard'
 import Profile from './components/Profile'
 import Wallet from './components/Wallet'
+import ThemeToggle from './components/ThemeToggle'
 import './styles/tokens.css'
 import './App.css'
 
@@ -15,7 +16,6 @@ function DailyPuzzle() {
     </div>
   )
 }
-
 
 function NotFound() {
   return (
@@ -39,6 +39,7 @@ function AppShell() {
           <NavLink to="/profile">Profile</NavLink>
           <NavLink to="/wallet">Wallet</NavLink>
         </nav>
+        <ThemeToggle />
       </header>
 
       <main className="app-content">
