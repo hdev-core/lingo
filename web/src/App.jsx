@@ -1,14 +1,13 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
-import GuessGrid from './components/GuessGrid'
+import Puzzle from './components/Puzzle'
 import './styles/tokens.css'
 import './App.css'
 
-// Placeholder screens — will be built out fully in later feature cards
 function DailyPuzzle() {
   return (
     <div>
       <h1>Daily Puzzle</h1>
-      <GuessGrid wordLength={5} maxGuesses={6} guesses={[]} currentGuess="" />
+      <Puzzle />
     </div>
   )
 }
@@ -40,8 +39,6 @@ function NotFound() {
 }
 
 function AppShell() {
-  // NavLink automatically adds an "active" class when the route matches,
-  // so we can style the current page differently in App.css
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -62,7 +59,6 @@ function AppShell() {
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/wallet" element={<Wallet />} />
-          {/* Catch-all: any unmatched route shows the 404 page */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
