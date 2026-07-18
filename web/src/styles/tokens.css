@@ -9,27 +9,10 @@
   --hive-red-dark: #B10E2B;
   --hive-red-light: #F2617A;
 
-  /* Light mode neutral palette */
-  --color-black: #1A1A1A;
-  --color-dark-gray: #3A3A3A;
-  --color-mid-gray: #787C7E;
-  --color-light-gray: #D3D6DA;
-  --color-off-white: #F7F7F7;
-  --color-white: #FFFFFF;
-
-  /* Wordle-style feedback colors — same in both modes for consistency */
+  /* Wordle-style feedback colors — same in both modes */
   --feedback-correct: #6AAA64;
   --feedback-present: #C9B458;
   --feedback-absent: #787C7E;
-
-  /* Semantic colors — light mode (default) */
-  --color-primary: var(--hive-red);
-  --color-primary-hover: var(--hive-red-dark);
-  --color-background: var(--color-white);
-  --color-surface: var(--color-off-white);
-  --color-text-primary: var(--color-black);
-  --color-text-secondary: var(--color-mid-gray);
-  --color-border: var(--color-light-gray);
 
   /* Typography */
   --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -50,25 +33,39 @@
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
+}
 
-  /* Shadows */
+/* Light mode (default) */
+:root,
+[data-theme='light'] {
+  --color-primary: var(--hive-red);
+  --color-primary-hover: var(--hive-red-dark);
+  --color-background: #FFFFFF;
+  --color-surface: #F7F7F7;
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #787C7E;
+  --color-border: #D3D6DA;
+  --color-light-gray: #D3D6DA;
+  --color-mid-gray: #787C7E;
+  --color-white: #FFFFFF;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Dark mode — activated automatically based on the user's OS/browser preference */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: #121212;
-    --color-surface: #1E1E1E;
-    --color-text-primary: #F2F2F2;
-    --color-text-secondary: #A0A0A0;
-    --color-border: #3A3A3A;
-    --color-light-gray: #2A2A2A;
-
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
-  }
+/* Dark mode — activated by data-theme="dark" on <html>, toggled via JS */
+[data-theme='dark'] {
+  --color-primary: var(--hive-red);
+  --color-primary-hover: var(--hive-red-light);
+  --color-background: #121212;
+  --color-surface: #1E1E1E;
+  --color-text-primary: #F2F2F2;
+  --color-text-secondary: #A0A0A0;
+  --color-border: #3A3A3A;
+  --color-light-gray: #2A2A2A;
+  --color-mid-gray: #A0A0A0;
+  --color-white: #FFFFFF;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
 }
 
 /* Basic resets using tokens */
