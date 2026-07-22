@@ -38,6 +38,11 @@ comment on your DevOps card naming the **service** + that it's scoped to **lingo
 **A) GitHub Actions + token (recommended).** Create a Vercel project, set **Root Directory = `web`**,
 add repo secrets `VERCEL_TOKEN` / `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID`, add `deploy.yml` +
 `preview.yml` (see `HOSTING_GUIDE.md`). Push to `main` → auto-deploy; each PR → preview URL.
+
+> ⚠️ **Don't let the deploy hang.** For the CLI action to work reliably: (1) the Vercel project's
+> **Root Directory must be `web`**, (2) **disconnect Vercel's own Git auto-deploy** (Settings → Git)
+> so the action and Vercel don't double-build and stall, and (3) keep the `timeout-minutes` in the
+> workflows so a stuck `vercel deploy` fails fast instead of running for an hour.
 **B)** Or the owner authorizes the Vercel app (scoped to lingo) and you import it in Vercel.
 
 ## 3b. Database → Supabase + Prisma  *(Laura)*
