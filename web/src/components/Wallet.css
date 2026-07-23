@@ -1,0 +1,36 @@
+.wallet-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.wallet-qualification {
+  background-color: var(--color-surface);
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  margin: var(--space-md) 0 var(--space-lg);
+  font-weight: 500;
+}
+
+.wallet-balances {
+  display: flex;
+  gap: var(--space-xl);
+}
+
+.wallet-balance {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.wallet-balance-value {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.wallet-balance-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}

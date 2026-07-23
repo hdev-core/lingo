@@ -1,0 +1,57 @@
+.profile-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.profile-username {
+  color: var(--color-text-secondary);
+  margin-top: -var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.profile-stats {
+  display: flex;
+  gap: var(--space-xl);
+  margin-bottom: var(--space-lg);
+}
+
+.profile-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-stat-value {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.profile-stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.profile-subheading {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-sm);
+}
+
+.profile-history {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.profile-history-day {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-light-gray);
+}
+
+.profile-history-day--solved {
+  background-color: var(--feedback-correct);
+}

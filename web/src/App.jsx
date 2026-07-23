@@ -1,32 +1,20 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
-import GuessGrid from './components/GuessGrid'
+import Puzzle from './components/Puzzle'
+import Results from './components/Results'
+import Leaderboard from './components/Leaderboard'
+import Profile from './components/Profile'
+import Wallet from './components/Wallet'
+import ThemeToggle from './components/ThemeToggle'
 import './styles/tokens.css'
 import './App.css'
 
-// Placeholder screens — will be built out fully in later feature cards
 function DailyPuzzle() {
   return (
     <div>
       <h1>Daily Puzzle</h1>
-      <GuessGrid wordLength={5} maxGuesses={6} guesses={[]} currentGuess="" />
+      <Puzzle />
     </div>
   )
-}
-
-function Results() {
-  return <h1>Results & Share</h1>
-}
-
-function Leaderboard() {
-  return <h1>Leaderboard</h1>
-}
-
-function Profile() {
-  return <h1>Profile & Streak</h1>
-}
-
-function Wallet() {
-  return <h1>Wallet & Rewards</h1>
 }
 
 function NotFound() {
@@ -40,8 +28,6 @@ function NotFound() {
 }
 
 function AppShell() {
-  // NavLink automatically adds an "active" class when the route matches,
-  // so we can style the current page differently in App.css
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -53,6 +39,7 @@ function AppShell() {
           <NavLink to="/profile">Profile</NavLink>
           <NavLink to="/wallet">Wallet</NavLink>
         </nav>
+        <ThemeToggle />
       </header>
 
       <main className="app-content">
@@ -62,7 +49,6 @@ function AppShell() {
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/wallet" element={<Wallet />} />
-          {/* Catch-all: any unmatched route shows the 404 page */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

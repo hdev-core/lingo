@@ -1,0 +1,26 @@
+.streak-counter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-md);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  width: fit-content;
+  margin-bottom: var(--space-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.streak-icon {
+  font-size: var(--font-size-lg);
+}
+
+.streak-count {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.streak-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
