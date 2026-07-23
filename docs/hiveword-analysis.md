@@ -46,7 +46,9 @@ const answer = "apple"; // visible in devtools, game is broken
 ```
 
 LINGO's architecture avoids this by keeping the answer server-side only:
-The client never receives the word — only a right/wrong (or letter-state) response. This is a genuine architectural advantage *if implemented*, and worth calling out as a concrete, testable claim rather than an assumption about HiveWord's code (which isn't public here, so don't assert HiveWord definitely fails this — frame it as a common pitfall this architecture avoids).
+The client never receives the word — only a right/wrong (or letter-state) response. This is a genuine architectural advantage *if implemented*, and worth calling out as a concrete, testable claim rather than an assumption about HiveWord's code 
+
+> Note: HiveWord's code isn't public, so we can't assert HiveWord definitely fails this — we just note this as a common pitfall this architecture avoids.
 
 ### 4.2 Structured Data & Analytics
 
