@@ -1,0 +1,28 @@
+{
+  "name": "api",
+  "private": true,
+  "version": "0.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node --watch --env-file=.env src/index.js",
+    "start": "node --env-file=.env src/index.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "testnet:smoke": "node --env-file=.env scripts/testnet_smoke_test.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.12.0",
+    "@hiveio/wax": "^2.0.2",
+    "@hiveio/beekeeper": "^1.28.7-rc0",
+    "sscjs": "^0.0.9"
+  },
+  "devDependencies": {
+    "eslint": "^9.9.0",
+    "@eslint/js": "^9.9.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.3.3",
+    "globals": "^15.9.0"
+  }
+}
