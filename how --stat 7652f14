@@ -1,0 +1,8 @@
+[33mcommit b51c2ce47733e349cec28d0229b39169cb9add61[m
+Author: Intissar Soulaiman <intisarsulaimann@gmail.com>
+Date:   Fri Jul 24 15:25:16 2026 +0300
+
+    Added auth routes: challenge, verify, refresh, revoke
+
+ server/src/auth/routes.js | 77 [32m+++++++++++++++++++++++++++++++++++++++++++++++[m
+ 1 file changed, 77 insertions(+)
