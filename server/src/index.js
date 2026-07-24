@@ -1,4 +1,5 @@
 const express = require('express');
+const authRoutes = require('./auth/routes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -12,6 +13,8 @@ app.get('/health', (_req, res) => {
     uptimeSeconds: Math.round(process.uptime()),
   });
 });
+
+app.use('/api/auth', authRoutes);
 
 app.listen(PORT, () => {
   console.log(`api listening on port ${PORT}`);
