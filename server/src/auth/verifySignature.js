@@ -51,16 +51,16 @@ async function verifyChallengeSignature({ username, nonce, signatureHex }) {
   // verifying, or every signature will appear invalid.
   const messageHash = crypto.createHash('sha256').update(nonce).digest();
 
-  const signature = Signature.fromString(signatureHex);
+const signature = Signature.from(signatureHex);
 
-  return postingPublicKeys.some((keyString) => {
-    try {
-      const publicKey = PublicKey.fromString(keyString);
-      return signature.verify(messageHash, publicKey);
-    } catch {
-      return false;
-    }
-  });
+return postingPublicKeys.some((keyString) => {
+  try {
+    const publicKey = PublicKey.fromString(keyString);
+    return publicKey.verify(messageHash, signature);
+  } catch {
+    return false;
+  }
+});
 }
 
 module.exports = { verifyChallengeSignature };
