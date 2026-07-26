@@ -5,8 +5,11 @@ import Leaderboard from './components/Leaderboard'
 import Profile from './components/Profile'
 import Wallet from './components/Wallet'
 import ThemeToggle from './components/ThemeToggle'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import LoginScreen from './components/LoginScreen'
 import './styles/tokens.css'
 import './App.css'
+
 
 function DailyPuzzle() {
   return (
@@ -28,6 +31,18 @@ function NotFound() {
 }
 
 function AppShell() {
+  const { isAuthenticated } = useAuth()
+
+  if (!isAuthenticated) {
+    return (
+      <div className="app-shell">
+        <main className="app-content">
+          <LoginScreen />
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -58,9 +73,11 @@ function AppShell() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <AppShell />
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <AppShell />
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 
