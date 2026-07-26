@@ -34,7 +34,7 @@ function issueSession(username) {
 
 function verifySession(token) {
   try {
-    const payload = jwt.verify(token, getSecret());
+    const payload = jwt.verify(token, getSecret(), { algorithms: ['HS256'] });
     return { valid: true, username: payload.username };
   } catch {
     return { valid: false, username: null };
