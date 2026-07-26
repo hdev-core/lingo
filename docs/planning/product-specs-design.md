@@ -48,6 +48,31 @@ The goal is to make LINGO a daily habit for Web3 users by combining:
 - Reward skill and consistency, not luck
 - Drive genuine utility for HBD and the LINGO token
 
+## 1.3.1 Competitive Positioning vs. Wagering-Based Word Games (e.g. HiveWord)
+
+There's already a Wordle-style game on Hive — HiveWord — worth being explicit about how LINGO differs, since the difference is structural, not cosmetic.
+
+**HiveWord's core loop is player-vs-player wagering:** players stake real HIVE (e.g. 5 HIVE) against another player in a 1v1 duel, and the winner takes the pot. The blockchain's role there is to trustlessly hold and settle that bet between two strangers. This is gambling-adjacent by design — real money moves from a losing player directly to a winning player, based on game skill.
+
+**LINGO deliberately does not do this.** No player ever stakes their own money against another player, and no player can lose money by playing. Instead:
+
+- The **weekly HBD pool** is funded by the platform/sponsors (see Section 4.5 — DHF, sponsorships, and other funding sources), not by other players' losses
+- Players earn a share of that pool through **skill and consistency** (solving ≥5/7 puzzles, speed, streaks — Section 4.1–4.2), not by beating a specific opponent for their stake
+- The **daily LINGO token** rewards participation and engagement (hints, streak shields, theme voting), never wagering
+
+In short: **HiveWord moves money player → player (wagering). LINGO moves money platform/sponsor → player (skill-based reward).** This isn't a minor framing difference — it's the line between a prize-based game and a betting app, and it's why LINGO avoids the legal exposure, problem-play risk, and narrower audience that come with real-money wagering, while still offering meaningful, real rewards.
+
+### Where LINGO can go further (beyond current MVP scope)
+
+To stay competitive with what makes HiveWord engaging (real stakes, real competition) without adopting wagering, later phases could explore:
+
+- **Sponsor-funded tournament weeks** — a Hive project funds a themed week's prize pool (builds on the existing "Sponsored theme weeks" backlog item, Section 8.2, P2); winners are rewarded by the sponsor, not by other players
+- **Achievement-based NFTs** — cosmetic proof-of-skill (existing backlog item), not a transferable stake
+- **Referral/community rewards** — LINGO tokens for growing the player base, not for outplaying a specific opponent
+- **An educational layer** — word definitions/vocabulary context after solving, which turns LINGO into a vocabulary-building tool as well as a game. This is something a duel-focused wagering app like HiveWord has no natural reason to build, since it doesn't serve their core loop — making it a genuine, hard-to-copy differentiator for LINGO rather than just an extra feature.
+
+These are explicitly future-phase ideas, not MVP scope — flagged here so the competitive reasoning is documented alongside the roadmap, not lost.
+
 ### 1.4 User Roles
 
 **Player (main user)**
@@ -320,7 +345,7 @@ Player opens LINGO and connects using Hive Keychain. Their identity gets verifie
 Player sees the one puzzle shared by everyone that day. The screen shows their current streak, attempts remaining, the guess grid, and an interactive keyboard (plus a hint button once that feature exists post-MVP). After each guess, they get Wordle-style feedback — green for correct letter and position, yellow for correct letter wrong position, gray for not in the word at all.
 
 **3. Results & Sharing**
-Once they finish (solved or not), they see their completion status, score, guess count, updated streak, and LINGO tokens earned. From here they can share a spoiler-free result directly to Hive.
+Once they finish (solved or not), they see their completion status, score, guess count, updated streak, and LINGO tokens ea rned. From here they can share a spoiler-free result directly to Hive.
 
 **4. Progress Tracking**
 Player can check the daily ranking, weekly leaderboard, their current streak, and how close they are to qualifying for that week's reward.
