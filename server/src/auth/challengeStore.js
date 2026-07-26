@@ -12,6 +12,17 @@ const CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 const challenges = new Map(); // username -> { nonce, expiresAt }
 
+// Periodically prune expired challenges so the Map doesn't grow unbounded,
+// since /challenge is unauthenticated and could otherwise be spammed.
+setInterval(() => {
+  const now = Date.now();
+  for (const [username, entry] of challenges.entries()) {
+    if (now > entry.expiresAt) {
+      challenges.delete(username);
+    }
+  }
+}, 60 * 1000); // every 60 seconds
+
 function createChallenge(username) {
   const nonce = `lingo-login-${username}-${Date.now()}-${Math.random()
     .toString(36)
