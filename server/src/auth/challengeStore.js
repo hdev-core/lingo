@@ -8,6 +8,8 @@
 // If the server is ever scaled horizontally, this should move to
 // PostgreSQL (a `login_challenges` table) or Redis instead.
 
+const crypto = require('crypto');
+
 const CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 const challenges = new Map(); // username -> { nonce, expiresAt }
@@ -16,35 +18,47 @@ const challenges = new Map(); // username -> { nonce, expiresAt }
 // since /challenge is unauthenticated and could otherwise be spammed.
 setInterval(() => {
   const now = Date.now();
+
   for (const [username, entry] of challenges.entries()) {
     if (now > entry.expiresAt) {
       challenges.delete(username);
     }
   }
-}, 60 * 1000); // every 60 seconds
+}, 60 * 1000).unref(); // cleanup without keeping Node process alive
 
 function createChallenge(username) {
-  const nonce = `lingo-login-${username}-${Date.now()}-${Math.random()
-    .toString(36)
-    .slice(2)}`;
+  const nonce = `lingo-login-${username}-${Date.now()}-${crypto.randomUUID()}`;
+
   const expiresAt = Date.now() + CHALLENGE_TTL_MS;
 
-  challenges.set(username, { nonce, expiresAt });
+  challenges.set(username, {
+    nonce,
+    expiresAt,
+  });
+
   return nonce;
 }
 
 function consumeChallenge(username, providedNonce) {
   const entry = challenges.get(username);
+
   if (!entry) return false;
 
-  // One-time use: remove it whether or not it's valid, so a leaked/replayed
-  // signature can't be reused against the same challenge twice.
+  // One-time use: remove immediately to prevent replay attacks.
   challenges.delete(username);
 
-  if (Date.now() > entry.expiresAt) return false;
-  if (entry.nonce !== providedNonce) return false;
+  if (Date.now() > entry.expiresAt) {
+    return false;
+  }
+
+  if (entry.nonce !== providedNonce) {
+    return false;
+  }
 
   return true;
 }
 
-module.exports = { createChallenge, consumeChallenge };
+module.exports = {
+  createChallenge,
+  consumeChallenge,
+};
