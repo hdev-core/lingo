@@ -352,7 +352,7 @@ Player opens LINGO and connects using Hive Keychain. Their identity gets verifie
 Player sees the one puzzle shared by everyone that day. The screen shows their current streak, attempts remaining, the guess grid, and an interactive keyboard (plus a hint button once that feature exists post-MVP). After each guess, they get Wordle-style feedback — green for correct letter and position, yellow for correct letter wrong position, gray for not in the word at all.
 
 **3. Results & Sharing**
-Once they finish (solved or not), they see their completion status, score, guess count, updated streak, and LINGO tokens ea rned. From here they can share a spoiler-free result directly to Hive.
+Once they finish (solved or not), they see their completion status, score, guess count, updated streak, and LINGO tokens earned. From here they can share a spoiler-free result directly to Hive.
 
 **4. Progress Tracking**
 Player can check the daily ranking, weekly leaderboard, their current streak, and how close they are to qualifying for that week's reward.
