@@ -7,6 +7,10 @@
   margin: var(--space-xl) auto;
 }
 
+.login-screen h1 {
+  margin-bottom: var(--space-sm);
+}
+
 .login-subtitle {
   color: var(--color-text-secondary);
   margin-bottom: var(--space-lg);
@@ -26,6 +30,12 @@
   font-size: var(--font-size-base);
   background-color: var(--color-background);
   color: var(--color-text-primary);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.login-form input:focus {
+  border-color: var(--color-primary);
 }
 
 .login-button {
@@ -36,7 +46,9 @@
   border-radius: var(--radius-md);
   font-weight: 700;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease;
 }
 
 .login-button:disabled {
@@ -58,4 +70,13 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   margin-top: var(--space-lg);
+}
+
+.login-hint a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.login-hint a:hover {
+  opacity: 0.8;
 }
