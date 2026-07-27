@@ -208,13 +208,26 @@ LINGO can be spent on:
 - **Streak shield** — spend LINGO to protect an existing streak if a day is missed
 - **Theme voting** — spend LINGO to participate in choosing upcoming weekly themes
 
-### 4.5 A Note on Funding
+### 4.5 HBD Pool Funding Model
 
-A few things worth being upfront about here:
+*Note: this funding model is a proposal pending final confirmation with Dr. Farhat — the numbers below are a starting point for that conversation, not a locked commitment.*
 
-- **DHF grants** are not something we're relying on to fund the HBD pool. Grants are competitive and slow to secure, so we're treating this as a "maybe later" option, not part of the actual funding plan.
-- **NFTs** aren't detailed in this doc yet. Before we commit to "cosmetic NFT sales" as a revenue source, we need a clear answer to what exactly we'd be selling — a placeholder idea isn't enough to build against.
-- **LINGO token issuance and liquidity** still needs to be worked out with Laura before we finalize it. We're flagging this as an open item that needs alignment, not something already decided.
+The weekly HBD pool needs a concrete, externally-funded source — this is what makes LINGO's reward system structurally different from player-funded wagering (see competitive-analysis.md §1). The funding model has a primary source and two fallbacks, in order of reliance:
+
+**Primary source: Platform treasury seed**
+The pool starts funded by a small, fixed weekly seed from the project's own operating budget — proposed at **5–10 HBD/week** to start. This is deliberately modest, sized to what a 2-person student project can sustain without external funding, and matches the low-cost infrastructure approach already established in the Technical Architecture (~$1–6/month hosting).
+
+**Fallback 1: Sponsor pipeline**
+Once LINGO has real usage data (post-MVP), sponsor-funded weeks (see competitive-analysis.md §2) can supplement or replace the treasury seed for specific weeks. This is not available at launch — it depends on having an active player base worth sponsoring.
+
+**Fallback 2: DHF backstop**
+A DHF grant is treated as a long-shot backstop, not a funding plan (per earlier CEO feedback — DHF applications are competitive and slow). If ever secured, it would supplement the treasury seed rather than replace the need for one.
+
+**Why this holds up the "not gambling" claim:** even at the minimum proposed seed (5 HBD/week), the pool's money originates from the platform's own treasury, not from other players' losses — preserving the structural distinction from HiveWord's player-funded wagering model, regardless of how modest the amount is at launch.
+
+**Other funding notes:**
+- **NFTs** aren't detailed here yet, since it needs a concrete answer to what's being sold — not treated as a funding source until scoped.
+- **LINGO token issuance and liquidity** is addressed separately in §4.4.
 
 ---
 
