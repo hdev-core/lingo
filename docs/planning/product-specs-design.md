@@ -48,33 +48,6 @@ The goal is to make LINGO a daily habit for Web3 users by combining:
 - Reward skill and consistency, not luck
 - Drive genuine utility for HBD and the LINGO token
 
-## 1.3.1 Competitive Positioning vs. Wagering-Based Word Games (e.g. HiveWord)
-
-There's already a Wordle-style game on Hive — HiveWord — worth being explicit about how LINGO differs, since the difference is structural, not cosmetic.
-
-**HiveWord's core loop is player-vs-player wagering:** players stake real HIVE (e.g. 5 HIVE) against another player in a 1v1 duel, and the winner takes the pot. The blockchain's role there is to trustlessly hold and settle that bet between two strangers. This is gambling-adjacent by design — real money moves from a losing player directly to a winning player, based on game skill.
-
-**LINGO deliberately does not do this.** No player ever stakes their own money against another player, and no player can lose money by playing. Instead:
-
-- The **weekly HBD pool** is funded by the platform/sponsors (see Section 4.5), not by other players' losses
-- Players earn a share of that pool through **skill and consistency** (solving ≥5/7 puzzles, speed, streaks — Section 4.1–4.2), not by beating a specific opponent for their stake
-- The **daily LINGO token** rewards participation and engagement (hints, streak shields, theme voting), never wagering
-
-In short: **HiveWord moves money player → player (wagering). LINGO moves money platform/sponsor → player (skill-based reward).** This is the line between a prize-based game and a betting app, and it's why LINGO avoids the legal exposure, problem-play risk, and narrower audience that come with real-money wagering, while still offering meaningful, real rewards.
-
-### Where LINGO can go further — evaluated for feasibility, not just appeal
-
-HiveWord's engagement hook is real stakes. To stay competitive without adopting wagering, the following ideas were evaluated specifically on whether they're realistically buildable given LINGO's current scope, team size (2 people), and MVP timeline — not just whether they sound good.
-
-| Idea | Feasibility | Why |
-|---|---|---|
-| **Sponsor-funded tournament weeks** | **Low-feasibility near-term, but the cheapest one to eventually try** | The mechanic itself is simple to build (it's just a bigger version of the existing weekly HBD pool — Section 8.2 already lists this as P2). The real blocker isn't code, it's finding an actual sponsor willing to fund a prize pool, which depends on LINGO having enough players to be worth sponsoring in the first place. Realistic sequencing: this only becomes worth pursuing *after* MVP launch and some real usage data — not something to build or promise now. |
-| **Achievement-based NFTs** | **Low priority, non-trivial cost** | Technically buildable (mint on Hive), but adds real scope: needs actual art/design work, NFT metadata standards, and a minting flow — none of which exists yet. This is a "nice later" item, not a near-term differentiator, and shouldn't be oversold as a planned feature until there's bandwidth to actually design it. |
-| **Referral/community rewards** | **Feasible, but needs a fraud-prevention design first** | Simple in concept (LINGO tokens for inviting friends), but naive referral systems are easy to abuse (fake accounts referring each other). Realistically this needs a basic anti-abuse rule (e.g., referred account must solve N puzzles before either side gets rewarded) before it's safe to build — that's an extra design step, not just a toggle to add. |
-| **Educational layer (word definitions/vocab context after solving)** | **Most feasible of the four, and the strongest genuine differentiator** | This can be built with a free dictionary API (e.g., Free Dictionary API, Wiktionary) called after a puzzle ends — no blockchain work, no new backend infrastructure, and no dependency on outside parties (unlike sponsorship) or extra creative assets (unlike NFTs). It's realistically a small, self-contained feature that could ship in an early post-MVP phase, and it's something a duel-focused app like HiveWord has no natural reason to ever build, since it doesn't serve their wagering loop. |
-
-**Honest bottom line for the roadmap:** of these four, only the **educational layer** is realistically buildable in a near-term post-MVP phase with the current 2-person team and no outside dependencies. The other three are legitimate long-term directions, but each has a real blocker (sponsor pipeline, art/design capacity, or an anti-fraud design step) that shouldn't be underestimated or promised before it's actually scoped. This section documents the reasoning and sequencing so the roadmap stays grounded rather than aspirational.
-
 ### 1.4 User Roles
 
 **Player (main user)**
