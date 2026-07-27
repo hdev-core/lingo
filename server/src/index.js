@@ -1,9 +1,14 @@
 const express = require('express');
+const cors = require('cors');
 const authRoutes = require('./auth/routes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+app.use(cors({
+  origin: 'http://localhost:5173', // frontend dev server
+  credentials: true,
+}));
 app.use(express.json());
 
 app.get('/health', (_req, res) => {
