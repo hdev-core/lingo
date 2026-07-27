@@ -66,6 +66,11 @@ async function verifyChallengeSignature({
       signatureHex
     );
 
+  // Temporary debugging for end-to-end verification:
+  // remove after confirming recovered key format matches posting.key_auths.
+  console.log('Recovered key:', recoveredPublicKey);
+  console.log('Posting keys:', postingPublicKeys);
+
   return postingPublicKeys.includes(recoveredPublicKey);
 }
 
