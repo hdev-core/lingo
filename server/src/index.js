@@ -1,5 +1,7 @@
 const express = require('express');
 const authRoutes = require('./auth/routes');
+const guessRouter = require('./routes/guess');
+const verifyRouter = require('./routes/verify');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -15,6 +17,15 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+
+// Private: requires an authenticated player -- see src/routes/guess.js
+// requireAuth for the current placeholder + the JWT-vs-session note in
+// the summary below.
+app.use('/api', guessRouter);
+
+// Public: no auth, but only exposes answer/secret for already-revealed
+// puzzles -- see src/routes/verify.js.
+app.use('/api', verifyRouter);
 
 app.listen(PORT, () => {
   console.log(`api listening on port ${PORT}`);

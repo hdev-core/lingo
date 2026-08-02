@@ -9,7 +9,10 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "testnet:smoke": "node --env-file=.env scripts/testnet_smoke_test.js"
+    "testnet:smoke": "node --env-file=.env scripts/testnet_smoke_test.js",
+    "puzzle:commit": "node scripts/daily_commit.js",
+    "puzzle:reveal": "node scripts/daily_reveal.js",
+    "fetch:valid-guesses": "node scripts/fetch_valid_guesses.js"
   },
   "dependencies": {
     "@hiveio/beekeeper": "^1.28.7-rc0",
