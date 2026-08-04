@@ -44,7 +44,8 @@ function consumeChallenge(username, providedNonce) {
 
   if (!entry) return false;
 
-  // One-time use: remove immediately to prevent replay attacks.
+  // One-time use: remove it whether or not it's valid, so a leaked/replayed
+  // signature can't be reused against the same challenge twice.
   challenges.delete(username);
 
   if (Date.now() > entry.expiresAt) {

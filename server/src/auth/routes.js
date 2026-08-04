@@ -104,8 +104,8 @@ router.post('/refresh', authLimiter, (req, res) => {
 });
 
 router.post('/revoke', (_req, res) => {
-  // MVP: sessions are stateless JWTs, so revoke is handled client-side
-  // by removing the stored token.
+  // MVP: sessions are stateless JWTs, so "revoke" is enforced client-side
+  // by discarding the token. Nothing to do server-side yet.
   res.status(200).json({
     revoked: true,
   });

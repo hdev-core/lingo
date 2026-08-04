@@ -1,8 +1,14 @@
 // src/auth/verifySignature.js
 //
 // Verifies that a login challenge was signed by the claimed Hive account's
-// posting key, using hive-tx for signature verification and a public Hive
-// API node to fetch the account's current posting public key(s).
+// posting key, using hive-tx for the cryptographic verification and a
+// public Hive API node to fetch the account's current posting public key(s).
+//
+// This is deliberately separate from waxClient.js: wax/beekeeper are used
+// there for the APP's own outgoing transactions (commit/reveal), whereas
+// this module verifies an arbitrary PLAYER-supplied signature against a
+// public key we look up on-chain -- a different job, hence a different
+// (smaller) library.
 
 const crypto = require('crypto');
 const hiveConfig = require('../hive/config');
@@ -26,16 +32,23 @@ async function getPostingPublicKeys(username) {
   }
 
   const account = result[0];
+  // key_auths is an array of [publicKey, weight] pairs
   return account.posting.key_auths.map(([publicKey]) => publicKey);
 }
 
 /**
  * Verifies that `signatureHex` is a valid signature of `nonce`, produced by
  * one of `username`'s current posting keys.
+ *
+ * @param {{ username: string, nonce: string, signatureHex: string }} params
+ * @returns {Promise<boolean>}
  */
 async function verifyChallengeSignature({ username, nonce, signatureHex }) {
   const postingPublicKeys = await getPostingPublicKeys(username);
 
+  // Keychain signs the SHA256 digest of the message, per Hive's standard
+  // "sign buffer" convention -- we must hash the nonce the same way before
+  // verifying, or every signature will appear invalid.
   const messageHash = crypto.createHash('sha256').update(nonce).digest();
   const signature = Signature.from(signatureHex);
 
