@@ -10,9 +10,9 @@
 // public key we look up on-chain -- a different job, hence a different
 // (smaller) library.
 
-const crypto = require('crypto');
 const hiveConfig = require('../hive/config');
 const { Signature, PublicKey } = require('hive-tx');
+const crypto = require('crypto');
 
 async function getPostingPublicKeys(username) {
   const response = await fetch(hiveConfig.apiEndpoint, {
@@ -50,12 +50,13 @@ async function verifyChallengeSignature({ username, nonce, signatureHex }) {
   // "sign buffer" convention -- we must hash the nonce the same way before
   // verifying, or every signature will appear invalid.
   const messageHash = crypto.createHash('sha256').update(nonce).digest();
-  const signature = Signature.from(signatureHex);
+
+  const signature = Signature.fromString(signatureHex);
 
   return postingPublicKeys.some((keyString) => {
     try {
       const publicKey = PublicKey.fromString(keyString);
-      return publicKey.verify(messageHash, signature);
+      return signature.verify(messageHash, publicKey);
     } catch {
       return false;
     }

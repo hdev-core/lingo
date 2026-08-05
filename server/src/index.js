@@ -1,19 +1,8 @@
 const express = require('express');
-const cors = require('cors');
 const authRoutes = require('./auth/routes');
 
 const app = express();
-
-app.set('trust proxy', 1);
-
 const PORT = process.env.PORT || 3001;
-
-app.use(
-  cors({
-    origin: process.env.WEB_ORIGIN || 'http://localhost:5173',
-    credentials: true,
-  })
-);
 
 app.use(express.json());
 
