@@ -279,7 +279,7 @@ This is the main organic growth lever for LINGO, so it needs to be as close to o
 - **When it appears:** Immediately after a player finishes their puzzle attempt (solved or not), on the results screen
 - **What gets shared:** A simple, spoiler-free grid (like Wordle's colored-square share format) showing the player's guess pattern without revealing the actual word, plus their score/streak
 - **The action:** A single "Share to Hive" button that posts the result directly as a Hive post — no copy-pasting, no leaving the app
-- **Why it matters technically:** Since this creates an actual Hive post, it should reuse the sa*Note: this funding model is a proposal pending final confirmation with Dr. Farhat — the numbers below are a starting point for that conversation, not a locked commitment.*me Keychain-based flow already used for guesses/login, so the player isn't asked to re-authenticate separately just to share
+- **Why it matters technically:** Since this creates an actual Hive post, it should reuse the same Keychain-based flow already used for guesses/login, so the player isn't asked to re-authenticate separately just to share
 
 ---
 
