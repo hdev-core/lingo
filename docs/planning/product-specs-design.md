@@ -229,7 +229,7 @@ LINGO is being treated as a **closed-loop utility credit** for MVP and the near 
 
 ### 4.5 HBD Pool Funding Model
 
-*Note: this funding model is a proposal pending final confirmation with Dr. Farhat — the numbers below are a starting point for that conversation, not a locked commitment.*
+*Note: this funding model has been confirmed with Dr. Farhat — the 5–10 HBD/week treasury seed is the approved starting number.*
 
 The weekly HBD pool needs a concrete, externally-funded source — this is what makes LINGO's reward system structurally different from player-funded wagering (see competitive-analysis.md §1). The funding model has a primary source and two fallbacks, in order of reliance:
 
