@@ -1,8 +1,22 @@
 const express = require('express');
+const cors = require('cors');
 const authRoutes = require('./auth/routes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Comma-separated list of allowed frontend origins, e.g.
+// "http://localhost:5173,https://lingo-web-livid.vercel.app"
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim());
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 
