@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const authRoutes = require('./auth/routes');
 
 const app = express();
@@ -14,11 +15,12 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173')
 app.use(
   cors({
     origin: allowedOrigins,
-    credentials: true,
+    credentials: true, // required so the browser sends/receives the httpOnly cookie
   })
 );
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.get('/health', (_req, res) => {
   res.status(200).json({
