@@ -110,6 +110,9 @@ dist
 # Serverless directories
 .serverless/
 
+# Can contain Beekeeper wallet data
+server/storage_root-node/
+
 # FuseBox cache
 .fusebox/
 

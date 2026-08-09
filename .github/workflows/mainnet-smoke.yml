@@ -1,14 +1,10 @@
-name: Daily Puzzle Reveal
+name: Mainnet Commit/Reveal Smoke Test
 
 on:
-  schedule:
-    # Every day at 23:59 UTC
-    - cron: "59 23 * * *"
-
   workflow_dispatch:
 
 jobs:
-  reveal:
+  smoke:
     runs-on: ubuntu-latest
 
     defaults:
@@ -29,11 +25,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run daily reveal
-        run: npm run puzzle:reveal
+      - name: Run mainnet commit/reveal smoke test
+        run: node scripts/mainnet_smoke_test.js
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-          HIVE_API_NODE: ${{ secrets.HIVE_API_NODE }}
+          HIVE_NETWORK: mainnet
           HIVE_APP_ACCOUNT: ${{ secrets.HIVE_APP_ACCOUNT }}
           HIVE_APP_POSTING_KEY: ${{ secrets.HIVE_APP_POSTING_KEY }}
+          HIVE_ENGINE_NODE: https://api.hive-engine.com/rpc
+          LINGO_TOKEN_SYMBOL: LINGO

@@ -6,24 +6,18 @@
 // point for the "answer/secret never exposed to the frontend" requirement
 // from the security lockdown work.
 //
-// Auth: requires a verified JWT from the auth work (jsonwebtoken dep,
-// ./auth/routes.js), NOT a session -- updated from an earlier
-// session-based placeholder to match what actually landed. Nothing in
-// this file should trust a client-supplied username; it must come from
-// the verified token payload.
-//
-// FLAGGED, NOT CONFIRMED: I don't have visibility into ./auth/routes.js's
-// actual token payload shape or the env var name holding the JWT signing
-// secret -- both are guessed below (`payload.hiveUsername`, `JWT_SECRET`)
-// based on common convention. Confirm both against the real auth
-// implementation before relying on this in production; adjust the two
-// marked lines if they don't match.
+// FIXED (review #3): previously guessed at the auth shape (JWT_SECRET,
+// payload.hiveUsername) instead of reusing the real issuer. That
+// mismatched the actual session.js (SESSION_JWT_SECRET, payload.username,
+// via verifySession()) and 401'd every authenticated request. Now reuses
+// verifySession() directly -- no separate jwt.verify call, no guessed
+// secret name, no guessed payload field.
 
 const express = require('express');
-const jwt = require('jsonwebtoken');
 const { pool } = require('../db');
 const { getFeedback } = require('../game/wordFeedback');
 const { isValidGuess } = require('../game/validWords');
+const { verifySession } = require('../auth/session');
 
 const router = express.Router();
 
@@ -35,17 +29,13 @@ function requireAuth(req, res, next) {
     return res.status(401).json({ error: 'not authenticated' });
   }
 
-  try {
-    // TODO CONFIRM: payload shape + secret env var name -- see file header.
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.hiveUsername = payload.hiveUsername;
-    if (!req.hiveUsername) {
-      return res.status(401).json({ error: 'invalid token payload' });
-    }
-    next();
-  } catch {
-    return res.status(401).json({ error: 'invalid or expired token' });
+  const { valid, username } = verifySession(token);
+  if (!valid || !username) {
+    return res.status(401).json({ error: 'invalid or expired session' });
   }
+
+  req.hiveUsername = username;
+  next();
 }
 
 router.post('/guess', requireAuth, async (req, res) => {
@@ -56,8 +46,9 @@ router.post('/guess', requireAuth, async (req, res) => {
     return res.status(400).json({ error: 'guess is required' });
   }
 
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     const today = new Date().toISOString().slice(0, 10); // UTC calendar date
 
     // Explicit column list -- never `SELECT *` on daily_puzzles.
@@ -83,7 +74,6 @@ router.post('/guess', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'not a recognized word' });
     }
 
-    // How many attempts has this player already used today?
     const attemptsResult = await client.query(
       `SELECT COUNT(*)::int AS count FROM guesses
        WHERE hive_username = $1 AND puzzle_date = $2`,
@@ -124,7 +114,7 @@ router.post('/guess', requireAuth, async (req, res) => {
     console.error('guess route error:', err);
     res.status(500).json({ error: 'internal error' });
   } finally {
-    client.release();
+    if (client) client.release();
   }
 });
 

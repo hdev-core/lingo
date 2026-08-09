@@ -1,41 +1,56 @@
 /**
  * scripts/daily_reveal.js
  *
- * Runs once per day, end-of-day UTC (via the scheduled GitHub Actions
- * workflow). Reveals the day's answer/secret publicly on-chain via
- * lingo_reveal, and flips daily_puzzles.status to 'revealed' -- from that
- * point on, GET /api/verify/:date is allowed to include answer/secret in
- * its response (see src/routes/verify.js).
+ * Runs once per day, at 23:59 UTC (via the scheduled GitHub Actions
+ * workflow) -- after that day's puzzle has been live and playable all day.
  *
- * Usage: node --env-file=.env scripts/daily_reveal.js
+ * FIXED: reveals TODAY's puzzle (the day that's ending, right before
+ * midnight), not yesterday's. The previous version subtracted a day
+ * before computing puzzleDate, which both revealed the wrong day's
+ * answer and threw on the very first run (no puzzle existed for
+ * "yesterday" relative to day one). At 23:59 UTC, "today" per
+ * new Date().toISOString() IS the day whose puzzle should be revealed --
+ * no date arithmetic needed at all.
+ *
+ * 1. Finds today's daily_puzzles row (status should be 'live').
+ * 2. Broadcasts lingo_reveal (answer + secret) via wax, signed with the
+ *    app account's POSTING key.
+ * 3. Flips status to 'revealed'.
+ *
+ * Usage: node scripts/daily_reveal.js
+ * (no --env-file flag -- see package.json note: CI supplies real env vars
+ * directly, a literal .env file won't exist on the runner)
  */
 
 const { pool } = require('../src/db');
 const { broadcastReveal } = require('../src/hive/waxClient');
 
 async function main() {
-  const date = new Date();
-  date.setUTCDate(date.getUTCDate() - 1); // edited since prev line may reveal new puzzel (today's) instead of the old one (yesterday's): const puzzleDate = new Date().toISOString().slice(0, 10);
-  const puzzleDate = date.toISOString().slice(0, 10); // UTC calendar date
+  const puzzleDate = new Date().toISOString().slice(0, 10); // UTC calendar date
   const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
 
     const result = await client.query(
-      `SELECT puzzle_date, answer, secret, status FROM daily_puzzles
-       WHERE puzzle_date = $1 FOR UPDATE`,
+      `SELECT puzzle_date, answer, secret, status
+       FROM daily_puzzles
+       WHERE puzzle_date = $1
+       FOR UPDATE`,
       [puzzleDate]
     );
     const puzzle = result.rows[0];
 
     if (!puzzle) {
-      throw new Error(`No daily_puzzles row for ${puzzleDate} -- did daily_commit run today?`);
+      throw new Error(`No daily_puzzles row for ${puzzleDate} -- did daily_commit.js run today?`);
     }
     if (puzzle.status === 'revealed') {
-      console.log(`Puzzle for ${puzzleDate} was already revealed -- nothing to do.`);
+      console.log(`${puzzleDate} was already revealed -- nothing to do.`);
       await client.query('ROLLBACK');
       return;
+    }
+    if (puzzle.status !== 'live') {
+      throw new Error(`Unexpected status "${puzzle.status}" for ${puzzleDate} -- refusing to reveal.`);
     }
 
     console.log(`Broadcasting lingo_reveal for ${puzzleDate}...`);
@@ -52,7 +67,7 @@ async function main() {
     );
 
     await client.query('COMMIT');
-    console.log(`Puzzle for ${puzzleDate} revealed and marked in the DB.`);
+    console.log(`${puzzleDate} revealed and marked complete.`);
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;
