@@ -6,6 +6,10 @@ const authRoutes = require('./auth/routes');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Required behind a reverse proxy (Hetzner/Vercel/etc.) so express-rate-limit
+// reads the real client IP instead of throwing or bucketing every user together.
+app.set('trust proxy', 1);
+
 // Comma-separated list of allowed frontend origins, e.g.
 // "http://localhost:5173,https://lingo-web-livid.vercel.app"
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173')

@@ -20,15 +20,27 @@ const authLimiter = rateLimit({
   message: { error: 'Too many requests, please try again later.' },
 });
 
-// Shared cookie options -- httpOnly so client-side JS can never read the
-// token (protects against XSS token theft). secure:true requires HTTPS,
-// which is fine in production but would block cookies over plain
-// http://localhost in local dev, so it's toggled off outside production.
+// Same allow-list used for CORS in index.js -- reused here as a manual
+// CSRF check on state-changing routes, since a cross-site cookie
+// (SameSite=None) can't rely on SameSite=Lax to block cross-site requests.
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim());
+
+function requireTrustedOrigin(req, res, next) {
+  const origin = req.headers.origin;
+  if (!origin || !allowedOrigins.includes(origin)) {
+    return res.status(403).json({ error: 'Untrusted origin' });
+  }
+  next();
+}
+
 const SESSION_COOKIE_NAME = 'lingo_session';
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax',
+  secure: true, // required for SameSite=None; also fine in local dev over http in modern browsers when testing via localhost
+  sameSite: 'none', // frontend (Vercel) and backend are on different domains -- Lax would block the cookie entirely
+  path: '/api/auth',
   maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days, matches SESSION_TTL_SECONDS in session.js
 };
 
@@ -71,7 +83,8 @@ router.post('/verify', authLimiter, async (req, res) => {
     res.cookie(SESSION_COOKIE_NAME, session.token, cookieOptions);
     res.status(200).json({ username: session.username, expiresAt: session.expiresAt });
   } catch (err) {
-    if (err.message.includes('Hive account not found')) {
+    const message = err instanceof Error ? err.message : '';
+    if (message.includes('Hive account not found')) {
       return res.status(401).json({ error: 'Invalid Hive account' });
     }
     console.error('Login verification error:', err);
@@ -93,7 +106,7 @@ router.get('/me', (req, res) => {
   res.status(200).json({ username });
 });
 
-router.post('/refresh', authLimiter, (req, res) => {
+router.post('/refresh', authLimiter, requireTrustedOrigin, (req, res) => {
   const token = req.cookies[SESSION_COOKIE_NAME];
   if (!token) {
     return res.status(400).json({ error: 'No active session' });
@@ -108,8 +121,8 @@ router.post('/refresh', authLimiter, (req, res) => {
   res.status(200).json({ username: refreshed.username, expiresAt: refreshed.expiresAt });
 });
 
-router.post('/revoke', (_req, res) => {
-  res.clearCookie(SESSION_COOKIE_NAME);
+router.post('/revoke', requireTrustedOrigin, (_req, res) => {
+  res.clearCookie(SESSION_COOKIE_NAME, { path: '/api/auth' });
   res.status(200).json({ revoked: true });
 });
 
