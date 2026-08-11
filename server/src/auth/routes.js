@@ -16,18 +16,28 @@ const {
   refreshSession,
   revokeSession,
 } = require('./session');
+const { allowedOrigins } = require('../lib/allowedOrigins');
 
 const router = express.Router();
 
+// Applies to login-critical routes only (challenge/verify/refresh), since
+// these are the ones an attacker would abuse for credential stuffing or
+// brute-forcing a session.
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
   message: { error: 'Too many requests, please try again later.' },
 });
 
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173')
-  .split(',')
-  .map((origin) => origin.trim());
+// A more lenient limiter for /me and /revoke -- these are called far more
+// often during normal use (every page load, every sign-out) and aren't a
+// meaningful brute-force target, so they get their own, larger budget
+// rather than sharing (or lacking) a limit.
+const readLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { error: 'Too many requests, please try again later.' },
+});
 
 function requireTrustedOrigin(req, res, next) {
   const origin = req.headers.origin;
@@ -104,7 +114,7 @@ router.post('/verify', authLimiter, requireTrustedOrigin, async (req, res) => {
   }
 });
 
-router.get('/me', (req, res) => {
+router.get('/me', readLimiter, (req, res) => {
   const token = req.cookies[SESSION_COOKIE_NAME];
   if (!token) {
     return res.status(401).json({ error: 'Not logged in' });
@@ -133,7 +143,7 @@ router.post('/refresh', authLimiter, requireTrustedOrigin, (req, res) => {
   res.status(200).json({ username: refreshed.username, expiresAt: refreshed.expiresAt });
 });
 
-router.post('/revoke', requireTrustedOrigin, (req, res) => {
+router.post('/revoke', readLimiter, requireTrustedOrigin, (req, res) => {
   const token = req.cookies[SESSION_COOKIE_NAME];
   if (token) {
     revokeSession(token);

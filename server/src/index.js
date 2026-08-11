@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./auth/routes');
+const { allowedOrigins } = require('./lib/allowedOrigins');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -13,10 +14,6 @@ const PORT = process.env.PORT || 3001;
 // `true` is deliberately avoided: it trusts the entire X-Forwarded-For
 // chain, which lets a client spoof their own rate-limit bucket.
 app.set('trust proxy', 1);
-
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173')
-  .split(',')
-  .map((origin) => origin.trim());
 
 app.use(
   cors({
