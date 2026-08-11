@@ -1,17 +1,16 @@
 /**
- * scripts/daily_commit.js
+ * Runs once per day via the scheduled GitHub Actions workflow.
  *
- * Runs once per day (via the scheduled GitHub Actions workflow, UTC).
- * 1. Picks today's word from the curated word bank.
- * 2. Generates a random secret, computes commit_hash = SHA256(date|answer|secret).
- * 3. Inserts the daily_puzzles row with status='committed' -- answer/secret
- *    already stored server-side, but not yet live/playable.
- * 4. Broadcasts lingo_commit (hash only, never the answer) via wax, signed
- *    with the app account's POSTING key -- never active, per the
- *    least-privilege requirement.
- * 5. Flips status to 'live' once the broadcast confirms.
+ * 1. Selects today's word from the curated word bank.
+ * 2. Generates a secret and commit_hash = SHA256(date|answer|secret).
+ * 3. Broadcasts lingo_commit containing only the public hash, signed with
+ *    the dedicated app account's posting key.
+ * 4. Stores the puzzle, answer, secret, commit hash, and transaction ID in
+ *    daily_puzzles with status='live'.
+ * 5. Marks the selected word as used.
  *
- * Usage: node --env-file=.env scripts/daily_commit.js
+ * A transaction-scoped PostgreSQL advisory lock prevents overlapping
+ * scheduled/manual runs from creating two puzzles for the same UTC date.
  */
 
 const crypto = require('crypto');
@@ -25,6 +24,7 @@ async function main() {
 
   try {
     await client.query('BEGIN');
+    await client.query(`SELECT pg_advisory_xact_lock(hashtext('lingo_daily_commit'))`);
 
     const existing = await client.query(
       `SELECT puzzle_date FROM daily_puzzles WHERE puzzle_date = $1`,

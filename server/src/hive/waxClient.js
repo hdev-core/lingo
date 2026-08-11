@@ -43,10 +43,10 @@ async function getWallet() {
       const bk = await beekeeperFactory();
       const session = bk.createSession('lingo-app-session');
       const { wallet } = await session.createWallet(
-  `lingo-app-wallet-${randomUUID()}`,
-  undefined,
-  true
-);
+        `lingo-app-wallet-${randomUUID()}`,
+        undefined,
+        true
+      );
       //const { wallet } = await session.createWallet('lingo-app-wallet');
       const publicKey = await wallet.importKey(postingKey);
       return { wallet, publicKey };
@@ -65,29 +65,20 @@ async function broadcastAppCustomJson({ id, json }) {
   const { wallet, publicKey } = await getWallet();
   const tx = await chain.createTransaction();
   tx.pushOperation({
-  custom_json_operation: {
-    required_auths: [],
-    required_posting_auths: [appAccount],
-    id,
-    json: JSON.stringify(json),
-  },
-}).validate();
-  
-  /*tx.pushOperation({
-    custom_json: {
+    custom_json_operation: {
       required_auths: [],
       required_posting_auths: [appAccount],
       id,
       json: JSON.stringify(json),
     },
-  }).validate();*/
+  }).validate();
 
-tx.sign(wallet, publicKey);
-const txId = tx.id;
+  tx.sign(wallet, publicKey);
+  const txId = tx.id;
 
-await chain.broadcast(tx);
+  await chain.broadcast(tx);
 
-return { txId, raw: undefined };
+  return { txId, raw: undefined };
 }
 
 async function broadcastCommit({ puzzleDate, puzzleNumber, wordLength, commitHash }) {

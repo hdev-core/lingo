@@ -1,5 +1,6 @@
 name: Deploy server to Hetzner
-
+permissions:
+  contents: read
 "on":
   push:
     branches: [main]
@@ -22,5 +23,5 @@ jobs:
             cd ${{ secrets.HETZNER_LINGO_PATH }}/server
             git pull origin main
             npm ci --omit=dev
-            pm2 restart ecosystem.config.js --update-env || pm2 start ecosystem.config.js
-            pm2 save
+            npx pm2 restart ecosystem.config.js --update-env || npx pm2 start ecosystem.config.js
+            npx pm2 save

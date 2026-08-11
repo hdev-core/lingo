@@ -18,10 +18,8 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
       },
-      // Reads the real secrets from the box's own env file at runtime --
-      // never committed, set up once during initial deploy (see
-      // DEPLOYMENT.md §3c).
-      env_file: '.env',
+      // src/index.js loads this directory's real .env through dotenv.
+      // The file is created directly on the server and is never committed.
       instances: 1,
       autorestart: true,
       max_restarts: 10,

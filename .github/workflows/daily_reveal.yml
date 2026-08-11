@@ -1,9 +1,11 @@
 name: Daily Puzzle Reveal
-
+permissions:
+  contents: read
 on:
   schedule:
-    # Every day at 23:59 UTC
-    - cron: "59 23 * * *"
+    # Run after midnight UTC. The script selects the oldest eligible prior
+    # live puzzle from database state, not from the runner's wall-clock date.
+    - cron: "5 0 * * *"
 
   workflow_dispatch:
 
