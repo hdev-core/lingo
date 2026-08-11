@@ -31,7 +31,17 @@ function NotFound() {
 }
 
 function AppShell() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isLoading, logout, username } = useAuth()
+
+  if (isLoading) {
+    return (
+      <div className="app-shell">
+        <main className="app-content">
+          <p>Loading...</p>
+        </main>
+      </div>
+    )
+  }
 
   if (!isAuthenticated) {
     return (
@@ -54,7 +64,13 @@ function AppShell() {
           <NavLink to="/profile">Profile</NavLink>
           <NavLink to="/wallet">Wallet</NavLink>
         </nav>
-        <ThemeToggle />
+        <div className="app-header-actions">
+          <span className="app-username">{username}</span>
+          <button type="button" className="logout-button" onClick={logout}>
+            Log out
+          </button>
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className="app-content">

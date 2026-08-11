@@ -15,7 +15,8 @@ function LoginScreen() {
 
   async function handleLogin(e) {
     e.preventDefault()
-    if (!username.trim()) return
+    const normalizedUsername = username.trim().toLowerCase()
+    if (!normalizedUsername) return
 
     setStatus('signing')
     setErrorMessage('')
@@ -24,21 +25,23 @@ function LoginScreen() {
       const challengeRes = await fetch(`${API_BASE}/api/auth/challenge`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username: normalizedUsername }),
       })
       if (!challengeRes.ok) throw new Error('Could not get login challenge')
       const { nonce } = await challengeRes.json()
 
-      // Aioha persists its own session in localStorage separately from ours.
-      // If a stale session exists from an earlier attempt, clear it first
-      // so login() doesn't reject with "Already logged in".
+      // Aioha persists its own session separately from ours. If a stale
+      // session exists from an earlier attempt (possibly under a
+      // different account), clear ALL of Aioha's stored logins first --
+      // not just the current provider -- so login() doesn't reject with
+      // "Already logged in" (error 4901).
       if (aioha.isLoggedIn()) {
-        await aioha.logout()
+        await aioha.logoutAll()
       }
 
       // aioha.login signs the nonce as a message via Keychain and
       // establishes the Aioha session in one step.
-      const loginResult = await aioha.login(Providers.Keychain, username, {
+      const loginResult = await aioha.login(Providers.Keychain, normalizedUsername, {
         msg: nonce,
         keyType: KeyTypes.Posting,
       })
@@ -52,8 +55,9 @@ function LoginScreen() {
       const verifyRes = await fetch(`${API_BASE}/api/auth/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // required so the browser stores the httpOnly session cookie
         body: JSON.stringify({
-          username,
+          username: normalizedUsername,
           nonce,
           signature: loginResult.result,
         }),

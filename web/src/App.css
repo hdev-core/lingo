@@ -44,6 +44,34 @@
   font-weight: 700;
 }
 
+.app-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.app-username {
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.logout-button {
+  background-color: transparent;
+  color: var(--color-white);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.logout-button:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
 .app-content {
   flex: 1;
   display: flex;
@@ -63,5 +91,9 @@
     flex-wrap: wrap;
     justify-content: center;
     gap: var(--space-sm);
+  }
+
+  .app-header-actions {
+    justify-content: center;
   }
 }
