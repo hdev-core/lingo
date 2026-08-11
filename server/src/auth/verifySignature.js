@@ -32,29 +32,12 @@ async function getPostingPublicKeys(username) {
   }
 
   const account = result[0];
-  // key_auths is an array of [publicKey, weight] pairs
   return account.posting.key_auths.map(([publicKey]) => publicKey);
 }
 
-/**
- * Verifies that `signatureHex` is a valid signature of `nonce`, produced by
- * one of `username`'s current posting keys.
- *
- * Note: hive-tx 7.2.0 does not expose `Signature.fromString` -- use
- * `Signature.from`. Verification is called on the PublicKey instance
- * (`publicKey.verify(...)`), not on the Signature. Both calls now live
- * inside the per-key try/catch, since bad/non-hex input can throw here
- * too, not just from an invalid key.
- *
- * @param {{ username: string, nonce: string, signatureHex: string }} params
- * @returns {Promise<boolean>}
- */
 async function verifyChallengeSignature({ username, nonce, signatureHex }) {
   const postingPublicKeys = await getPostingPublicKeys(username);
 
-  // Keychain signs the SHA256 digest of the message, per Hive's standard
-  // "sign buffer" convention -- we must hash the nonce the same way before
-  // verifying, or every signature will appear invalid.
   const messageHash = crypto.createHash('sha256').update(nonce).digest();
 
   return postingPublicKeys.some((keyString) => {
@@ -62,7 +45,11 @@ async function verifyChallengeSignature({ username, nonce, signatureHex }) {
       const signature = Signature.from(signatureHex);
       const publicKey = PublicKey.fromString(keyString);
       return publicKey.verify(messageHash, signature);
-    } catch {
+    } catch (err) {
+      // A dropped bs58 override, a library upgrade, or malformed input all
+      // land here as `false` with no signal. Log it so a silent 100%
+      // login outage isn't invisible in production logs.
+      console.error('Signature verification attempt failed:', err.message);
       return false;
     }
   });

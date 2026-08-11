@@ -11,19 +11,43 @@
 const crypto = require('crypto');
 
 const CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const MAX_CHALLENGES = 5000; // cap so an unauthenticated spam burst can't grow this unbounded
+const MAX_CHALLENGES = 5000;
 
-const challenges = new Map(); // username -> { nonce, expiresAt }
+const HIVE_USERNAME_PATTERN = /^[a-z][a-z0-9-]{2,15}(\.[a-z][a-z0-9-]{2,15})*$/;
+
+function isValidHiveUsername(username) {
+  return (
+    typeof username === 'string' &&
+    username.length >= 3 &&
+    username.length <= 16 &&
+    HIVE_USERNAME_PATTERN.test(username)
+  );
+}
+
+const challenges = new Map();
+
+function evictOldestEntry() {
+  const oldestKey = challenges.keys().next().value;
+  if (oldestKey !== undefined) {
+    challenges.delete(oldestKey);
+  }
+}
 
 function createChallenge(username) {
-  // Lazy-expire: sweep out stale entries whenever the map gets large,
-  // rather than running a separate interval timer.
+  if (!isValidHiveUsername(username)) {
+    throw new Error('Invalid username');
+  }
+
   if (challenges.size >= MAX_CHALLENGES) {
     const now = Date.now();
     for (const [key, entry] of challenges) {
       if (now > entry.expiresAt) {
         challenges.delete(key);
       }
+    }
+
+    if (challenges.size >= MAX_CHALLENGES) {
+      evictOldestEntry();
     }
   }
 
@@ -40,8 +64,6 @@ function consumeChallenge(username, providedNonce) {
   const entry = challenges.get(username);
   if (!entry) return false;
 
-  // One-time use: remove it whether or not it's valid, so a leaked/replayed
-  // signature can't be reused against the same challenge twice.
   challenges.delete(username);
 
   if (Date.now() > entry.expiresAt) return false;
@@ -50,4 +72,4 @@ function consumeChallenge(username, providedNonce) {
   return true;
 }
 
-module.exports = { createChallenge, consumeChallenge };
+module.exports = { createChallenge, consumeChallenge, isValidHiveUsername };

@@ -8,8 +8,7 @@
     "start": "node --env-file=.env src/index.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write .",
-    "testnet:smoke": "node --env-file=.env scripts/testnet_smoke_test.js"
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@hiveio/beekeeper": "^1.28.7-rc0",
@@ -31,6 +30,8 @@
     "prettier": "^3.3.3"
   },
   "overrides": {
-    "bs58": "^5.0.0"
+    "hive-tx": {
+      "bs58": "^5.0.0"
+    }
   }
 }

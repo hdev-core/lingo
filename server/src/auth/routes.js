@@ -4,25 +4,27 @@
 // POST /api/auth/verify     -- verify a signed nonce, issue a session (httpOnly cookie)
 // GET  /api/auth/me         -- check current login status from the session cookie
 // POST /api/auth/refresh    -- extend an existing valid session
-// POST /api/auth/revoke     -- clear the session cookie (logout)
+// POST /api/auth/revoke     -- revoke the session and clear the cookie (logout)
 
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const { createChallenge, consumeChallenge } = require('./challengeStore');
 const { verifyChallengeSignature } = require('./verifySignature');
-const { issueSession, verifySession, refreshSession } = require('./session');
+const {
+  issueSession,
+  verifySession,
+  refreshSession,
+  revokeSession,
+} = require('./session');
 
 const router = express.Router();
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // limit each IP to 20 requests per window
+  windowMs: 15 * 60 * 1000,
+  max: 20,
   message: { error: 'Too many requests, please try again later.' },
 });
 
-// Same allow-list used for CORS in index.js -- reused here as a manual
-// CSRF check on state-changing routes, since a cross-site cookie
-// (SameSite=None) can't rely on SameSite=Lax to block cross-site requests.
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173')
   .split(',')
   .map((origin) => origin.trim());
@@ -35,27 +37,37 @@ function requireTrustedOrigin(req, res, next) {
   next();
 }
 
+function normalizeUsername(raw) {
+  if (typeof raw !== 'string') return '';
+  return raw.trim().replace(/^@/, '').toLowerCase();
+}
+
 const SESSION_COOKIE_NAME = 'lingo_session';
 const cookieOptions = {
   httpOnly: true,
-  secure: true, // required for SameSite=None; also fine in local dev over http in modern browsers when testing via localhost
-  sameSite: 'none', // frontend (Vercel) and backend are on different domains -- Lax would block the cookie entirely
-  path: '/api/auth',
-  maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days, matches SESSION_TTL_SECONDS in session.js
+  secure: true,
+  sameSite: 'none',
+  path: '/',
+  maxAge: 60 * 60 * 24 * 7 * 1000,
 };
 
-router.post('/challenge', authLimiter, (req, res) => {
-  const { username } = req.body;
-  if (!username || typeof username !== 'string') {
+router.post('/challenge', authLimiter, requireTrustedOrigin, (req, res) => {
+  const username = normalizeUsername(req.body.username);
+  if (!username) {
     return res.status(400).json({ error: 'username is required' });
   }
 
-  const nonce = createChallenge(username);
-  res.status(200).json({ nonce });
+  try {
+    const nonce = createChallenge(username);
+    res.status(200).json({ nonce });
+  } catch {
+    res.status(400).json({ error: 'Invalid username' });
+  }
 });
 
-router.post('/verify', authLimiter, async (req, res) => {
-  const { username, nonce, signature } = req.body;
+router.post('/verify', authLimiter, requireTrustedOrigin, async (req, res) => {
+  const username = normalizeUsername(req.body.username);
+  const { nonce, signature } = req.body;
   if (!username || !nonce || !signature) {
     return res
       .status(400)
@@ -121,8 +133,12 @@ router.post('/refresh', authLimiter, requireTrustedOrigin, (req, res) => {
   res.status(200).json({ username: refreshed.username, expiresAt: refreshed.expiresAt });
 });
 
-router.post('/revoke', requireTrustedOrigin, (_req, res) => {
-  res.clearCookie(SESSION_COOKIE_NAME, { path: '/api/auth' });
+router.post('/revoke', requireTrustedOrigin, (req, res) => {
+  const token = req.cookies[SESSION_COOKIE_NAME];
+  if (token) {
+    revokeSession(token);
+  }
+  res.clearCookie(SESSION_COOKIE_NAME, cookieOptions);
   res.status(200).json({ revoked: true });
 });
 

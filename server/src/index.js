@@ -6,12 +6,14 @@ const authRoutes = require('./auth/routes');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Required behind a reverse proxy (Hetzner/Vercel/etc.) so express-rate-limit
-// reads the real client IP instead of throwing or bucketing every user together.
+// Trust exactly 1 hop: the reverse proxy in front of this server (Hetzner,
+// terminating TLS via nginx/Caddy in front of this Node process). This
+// value MUST match the real deployment topology -- if more or fewer
+// proxies sit in front of this app, update the number accordingly.
+// `true` is deliberately avoided: it trusts the entire X-Forwarded-For
+// chain, which lets a client spoof their own rate-limit bucket.
 app.set('trust proxy', 1);
 
-// Comma-separated list of allowed frontend origins, e.g.
-// "http://localhost:5173,https://lingo-web-livid.vercel.app"
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173')
   .split(',')
   .map((origin) => origin.trim());
@@ -19,7 +21,7 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173')
 app.use(
   cors({
     origin: allowedOrigins,
-    credentials: true, // required so the browser sends/receives the httpOnly cookie
+    credentials: true,
   })
 );
 
