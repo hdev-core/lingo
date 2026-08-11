@@ -40,12 +40,6 @@ async function getPostingPublicKeys(username) {
  * Verifies that `signatureHex` is a valid signature of `nonce`, produced by
  * one of `username`'s current posting keys.
  *
- * Note: hive-tx 7.2.0 does not expose `Signature.fromString` -- use
- * `Signature.from`. Verification is called on the PublicKey instance
- * (`publicKey.verify(...)`), not on the Signature. Both calls now live
- * inside the per-key try/catch, since bad/non-hex input can throw here
- * too, not just from an invalid key.
- *
  * @param {{ username: string, nonce: string, signatureHex: string }} params
  * @returns {Promise<boolean>}
  */
@@ -57,11 +51,12 @@ async function verifyChallengeSignature({ username, nonce, signatureHex }) {
   // verifying, or every signature will appear invalid.
   const messageHash = crypto.createHash('sha256').update(nonce).digest();
 
+  const signature = Signature.fromString(signatureHex);
+
   return postingPublicKeys.some((keyString) => {
     try {
-      const signature = Signature.from(signatureHex);
       const publicKey = PublicKey.fromString(keyString);
-      return publicKey.verify(messageHash, signature);
+      return signature.verify(messageHash, publicKey);
     } catch {
       return false;
     }
