@@ -31,13 +31,35 @@ function NotFound() {
 }
 
 function AppShell() {
-  const { isAuthenticated, isLoading, logout, username } = useAuth()
+  const { isAuthenticated, isLoading, sessionCheckError, retryCheckSession, logout, username } =
+    useAuth()
 
   if (isLoading) {
     return (
       <div className="app-shell">
+        <header className="app-header app-header--minimal">
+          <div className="app-logo">LINGO</div>
+          <ThemeToggle />
+        </header>
         <main className="app-content">
           <p>Loading...</p>
+        </main>
+      </div>
+    )
+  }
+
+  if (sessionCheckError) {
+    return (
+      <div className="app-shell">
+        <header className="app-header app-header--minimal">
+          <div className="app-logo">LINGO</div>
+          <ThemeToggle />
+        </header>
+        <main className="app-content">
+          <p>Couldn't reach the server. Check your connection and try again.</p>
+          <button type="button" className="login-button" onClick={retryCheckSession}>
+            Retry
+          </button>
         </main>
       </div>
     )
@@ -46,6 +68,10 @@ function AppShell() {
   if (!isAuthenticated) {
     return (
       <div className="app-shell">
+        <header className="app-header app-header--minimal">
+          <div className="app-logo">LINGO</div>
+          <ThemeToggle />
+        </header>
         <main className="app-content">
           <LoginScreen />
         </main>

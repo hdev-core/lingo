@@ -1,7 +1,10 @@
 .theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
-  font-size: var(--font-size-lg);
+  color: var(--color-white);
   cursor: pointer;
   padding: var(--space-xs);
   border-radius: var(--radius-sm);

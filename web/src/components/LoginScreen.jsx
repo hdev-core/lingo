@@ -1,11 +1,23 @@
 import { useState } from 'react'
-import { initAioha, KeyTypes, Providers } from '@aioha/aioha'
+import { KeyTypes, Providers } from '@aioha/aioha'
+import { aioha } from '../lib/aioha'
 import { useAuth } from '../context/AuthContext'
 import './LoginScreen.css'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
+const KEYCHAIN_LOGIN_TIMEOUT_MS = 30 * 1000 // 30 seconds
 
-const aioha = initAioha()
+function normalizeUsername(raw) {
+  return raw.trim().replace(/^@/, '').toLowerCase()
+}
+
+function withTimeout(promise, ms, timeoutMessage) {
+  let timeoutId
+  const timeout = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(timeoutMessage)), ms)
+  })
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timeoutId))
+}
 
 function LoginScreen() {
   const { login } = useAuth()
@@ -15,7 +27,7 @@ function LoginScreen() {
 
   async function handleLogin(e) {
     e.preventDefault()
-    const normalizedUsername = username.trim().toLowerCase()
+    const normalizedUsername = normalizeUsername(username)
     if (!normalizedUsername) return
 
     setStatus('signing')
@@ -25,9 +37,13 @@ function LoginScreen() {
       const challengeRes = await fetch(`${API_BASE}/api/auth/challenge`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ username: normalizedUsername }),
       })
-      if (!challengeRes.ok) throw new Error('Could not get login challenge')
+      if (!challengeRes.ok) {
+        const err = await challengeRes.json().catch(() => ({}))
+        throw new Error(err.error || 'Could not get login challenge')
+      }
       const { nonce } = await challengeRes.json()
 
       // Aioha persists its own session separately from ours. If a stale
@@ -40,11 +56,18 @@ function LoginScreen() {
       }
 
       // aioha.login signs the nonce as a message via Keychain and
-      // establishes the Aioha session in one step.
-      const loginResult = await aioha.login(Providers.Keychain, normalizedUsername, {
-        msg: nonce,
-        keyType: KeyTypes.Posting,
-      })
+      // establishes the Aioha session in one step. Wrapped with a
+      // timeout since a dismissed (not declined) Keychain popup never
+      // resolves on its own, which would otherwise leave the button
+      // stuck on "Waiting for Keychain..." forever.
+      const loginResult = await withTimeout(
+        aioha.login(Providers.Keychain, normalizedUsername, {
+          msg: nonce,
+          keyType: KeyTypes.Posting,
+        }),
+        KEYCHAIN_LOGIN_TIMEOUT_MS,
+        'Keychain took too long to respond. Please try again.'
+      )
 
       if (!loginResult.success) {
         throw new Error(loginResult.error || 'Signing was cancelled or failed')
@@ -55,7 +78,7 @@ function LoginScreen() {
       const verifyRes = await fetch(`${API_BASE}/api/auth/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // required so the browser stores the httpOnly session cookie
+        credentials: 'include',
         body: JSON.stringify({
           username: normalizedUsername,
           nonce,
@@ -73,7 +96,11 @@ function LoginScreen() {
       setStatus('idle')
     } catch (err) {
       console.error('Login error:', err)
-      setErrorMessage(err.message || 'Something went wrong logging in')
+      const message =
+        err.name === 'TypeError'
+          ? 'Could not reach the server. Check your connection and try again.'
+          : err.message || 'Something went wrong logging in'
+      setErrorMessage(message)
       setStatus('error')
     }
   }
@@ -84,11 +111,18 @@ function LoginScreen() {
       <p className="login-subtitle">Log in with your Hive account to play</p>
 
       <form className="login-form" onSubmit={handleLogin}>
+        <label htmlFor="hive-username" className="sr-only">
+          Hive username
+        </label>
         <input
+          id="hive-username"
           type="text"
           placeholder="Hive username"
           value={username}
-          onChange={(e) => setUsername(e.target.value.trim())}
+          onChange={(e) => setUsername(e.target.value)}
+          autoComplete="username"
+          autoCapitalize="none"
+          spellCheck="false"
           disabled={status === 'signing' || status === 'verifying'}
         />
 
