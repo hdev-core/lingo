@@ -3,6 +3,11 @@
 // Short-lived storage for login challenges (nonces) issued to players
 // before they sign in via Hive Keychain.
 //
+// Keyed by nonce (not username): a challenge issued to one username no
+// longer overwrites another in-flight challenge for the same username,
+// closing the "targeted eviction" case where POST /challenge with a
+// victim's username could invalidate their in-progress login.
+//
 // MVP note: this is an in-memory Map, which is fine for a single-process
 // server but will NOT survive a restart or work across multiple instances.
 // If the server is ever scaled horizontally, this should move to
@@ -13,7 +18,10 @@ const crypto = require('crypto');
 const CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const MAX_CHALLENGES = 5000;
 
-const HIVE_USERNAME_PATTERN = /^[a-z][a-z0-9-]{2,15}(\.[a-z][a-z0-9-]{2,15})*$/;
+// Each dot-separated segment: starts with a letter, 3-16 chars total,
+// no trailing hyphen, no consecutive hyphens.
+const SEGMENT = '[a-z](?:[a-z0-9]|-(?!-)){1,14}[a-z0-9]';
+const HIVE_USERNAME_PATTERN = new RegExp(`^${SEGMENT}(?:\\.${SEGMENT})*$`);
 
 function isValidHiveUsername(username) {
   return (
@@ -24,7 +32,7 @@ function isValidHiveUsername(username) {
   );
 }
 
-const challenges = new Map();
+const challenges = new Map(); // nonce -> { username, expiresAt }
 
 function evictOldestEntry() {
   const oldestKey = challenges.keys().next().value;
@@ -56,18 +64,18 @@ function createChallenge(username) {
     .toString('hex')}`;
   const expiresAt = Date.now() + CHALLENGE_TTL_MS;
 
-  challenges.set(username, { nonce, expiresAt });
+  challenges.set(nonce, { username, expiresAt });
   return nonce;
 }
 
 function consumeChallenge(username, providedNonce) {
-  const entry = challenges.get(username);
+  const entry = challenges.get(providedNonce);
   if (!entry) return false;
 
-  challenges.delete(username);
+  challenges.delete(providedNonce);
 
   if (Date.now() > entry.expiresAt) return false;
-  if (entry.nonce !== providedNonce) return false;
+  if (entry.username !== username) return false;
 
   return true;
 }

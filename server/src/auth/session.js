@@ -4,6 +4,11 @@
 // A minimal in-memory revocation list tracks explicitly revoked sessions
 // (via jti) so /revoke and account bans can actually invalidate a token
 // before its natural expiry, not just rely on the client discarding it.
+//
+// NOTE: this Map-based revocation list does not survive a server
+// restart, and doesn't kill a token lineage across /refresh. A
+// per-user token_version column in Postgres is the durable fix and
+// is planned as a follow-up.
 
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
@@ -13,22 +18,23 @@ const MIN_SECRET_LENGTH = 32;
 
 const revokedJtis = new Map(); // jti -> expiresAt (so entries can be pruned)
 
-function getSecret() {
-  const secret = process.env.SESSION_JWT_SECRET;
-  if (!secret || secret.length < MIN_SECRET_LENGTH) {
-    throw new Error(
-      `SESSION_JWT_SECRET must be set and at least ${MIN_SECRET_LENGTH} characters.`
-    );
-  }
-  return secret;
+function validateSecret(secret) {
+  return typeof secret === 'string' && secret.length >= MIN_SECRET_LENGTH;
 }
 
-// Fail fast at boot rather than at first login.
-getSecret();
+// Fail fast at boot, with a clean message instead of an uncaught throw
+// and stack trace.
+const SECRET = process.env.SESSION_JWT_SECRET;
+if (!validateSecret(SECRET)) {
+  console.error(
+    `SESSION_JWT_SECRET must be set and at least ${MIN_SECRET_LENGTH} characters.`
+  );
+  process.exit(1);
+}
 
 function issueSession(username) {
   const jti = crypto.randomUUID();
-  const token = jwt.sign({ username, jti }, getSecret(), {
+  const token = jwt.sign({ username, jti }, SECRET, {
     expiresIn: SESSION_TTL_SECONDS,
     algorithm: 'HS256',
   });
@@ -51,7 +57,7 @@ function pruneRevokedJtis() {
 
 function verifySession(token) {
   try {
-    const payload = jwt.verify(token, getSecret(), { algorithms: ['HS256'] });
+    const payload = jwt.verify(token, SECRET, { algorithms: ['HS256'] });
     if (payload.jti && revokedJtis.has(payload.jti)) {
       return { valid: false, username: null };
     }
@@ -63,7 +69,7 @@ function verifySession(token) {
 
 function revokeSession(token) {
   try {
-    const payload = jwt.verify(token, getSecret(), {
+    const payload = jwt.verify(token, SECRET, {
       algorithms: ['HS256'],
       ignoreExpiration: true,
     });
