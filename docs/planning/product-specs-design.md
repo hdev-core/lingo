@@ -199,22 +199,54 @@ Since this drives a real reward (the 2× multiplier), it needs to be unambiguous
 - No pausing — once it starts, it just runs
 - This has to be tracked server-side, not client-side, since it directly affects real money (HBD) and needs to be tamper-proof
 
-### 4.4 Daily LINGO Token — What It's Actually For
+### 4.4 Daily LINGO Token — Economics & Utility
 
-Players earn LINGO daily by solving the puzzle. The token is designed for in-game utility rather than guaranteed cash value. A fixed daily LINGO token pool of approximately 500 tokens is distributed among that day's successful solvers. The exact per-solve distribution split will be finalized as part of the reward distribution logic.
+*Note: the economics below are a working proposal pending confirmation with Laura, since they directly drive her Hive-Engine issuance implementation.*
 
-LINGO can be spent on:
-- **Hints** — spend LINGO to reveal a letter or narrow down possible answers
-- **Streak shield** — spend LINGO to protect an existing streak if a day is missed
-- **Theme voting** — spend LINGO to participate in choosing upcoming weekly themes
+**Issuance schedule & supply**
+- A fixed daily issuance of **~500 LINGO tokens** is minted and distributed among that day's successful solvers.
+- At 500/day, annual issuance is approximately **182,500 LINGO/year** — LINGO is **not supply-capped** at MVP; it's an ongoing inflationary faucet, sized against the spend sinks below to avoid runaway inflation or player token hoarding with nothing to spend it on.
+- The exact per-solve split of the daily 500 (e.g., flat share vs. weighted by speed/streak) is still being finalized with Laura.
 
-### 4.5 A Note on Funding
+**Faucet vs. sink balance**
+For the token to stay healthy, roughly as much LINGO should be spent (sunk) as is issued (the faucet), rather than endlessly accumulating in player wallets:
 
-A few things worth being upfront about here:
+| Sink | Proposed cost | Notes |
+|---|---|---|
+| Hint (reveal a letter) | ~20 LINGO | Limited to 1/day/puzzle (see §5.2), capping max daily sink per player |
+| Streak shield | ~50 LINGO | Used to protect a streak after a missed day |
+| Theme voting | ~10 LINGO | Spent per vote; cheap to encourage participation |
 
-- **DHF grants** are not something we're relying on to fund the HBD pool. Grants are competitive and slow to secure, so we're treating this as a "maybe later" option, not part of the actual funding plan.
-- **NFTs** aren't detailed in this doc yet. Before we commit to "cosmetic NFT sales" as a revenue source, we need a clear answer to what exactly we'd be selling — a placeholder idea isn't enough to build against.
-- **LINGO token issuance and liquidity** still needs to be worked out with Laura before we finalize it. We're flagging this as an open item that needs alignment, not something already decided.
+At ~500/day issued across successful solvers, and an estimated MVP player base in the low hundreds (per Technical Architecture's ~500-player theoretical target), the hint/shield/vote sinks are sized to plausibly absorb a meaningful share of daily issuance once those features ship post-MVP — but this is a rough estimate, not a modeled economy, and should be revisited once real usage data exists.
+
+**Closed-loop utility, not external value**
+LINGO is being treated as a **closed-loop utility credit** for MVP and the near term — it has no promised exchange value, isn't marketed as an investment, and its only function is spending on the sinks above. Whether it ever gains external/market value (e.g., becomes tradeable on Hive-Engine markets) is an open question explicitly deferred — not a claim being made now. This keeps LINGO's utility framing honest and avoids implying speculative value it doesn't have.
+
+**What LINGO is spent on:**
+- **Hints** — reveal a letter or narrow down possible answers
+- **Streak shield** — protect an existing streak if a day is missed
+- **Theme voting** — participate in choosing upcoming weekly themes
+
+### 4.5 HBD Pool Funding Model
+
+*Note: this funding model has been confirmed with Dr. Farhat — the 5–10 HBD/week treasury seed is the approved starting number.*
+
+The weekly HBD pool needs a concrete, externally-funded source — this is what makes LINGO's reward system structurally different from player-funded wagering (see competitive-analysis.md §1). The funding model has a primary source and two fallbacks, in order of reliance:
+
+**Primary source: Platform treasury seed**
+The pool starts funded by a small, fixed weekly seed from the project's own operating budget — proposed at **5–10 HBD/week** to start. This is deliberately modest, sized to what a 2-person student project can sustain without external funding, and matches the low-cost infrastructure approach already established in the Technical Architecture (~$1–6/month hosting).
+
+**Fallback 1: Sponsor pipeline**
+Once LINGO has real usage data (post-MVP), sponsor-funded weeks (see competitive-analysis.md §2) can supplement or replace the treasury seed for specific weeks. This is not available at launch — it depends on having an active player base worth sponsoring.
+
+**Fallback 2: DHF backstop**
+A DHF grant is treated as a long-shot backstop, not a funding plan (per earlier CEO feedback — DHF applications are competitive and slow). If ever secured, it would supplement the treasury seed rather than replace the need for one.
+
+**Why this holds up the "not gambling" claim:** even at the minimum proposed seed (5 HBD/week), the pool's money originates from the platform's own treasury, not from other players' losses — preserving the structural distinction from HiveWord's player-funded wagering model, regardless of how modest the amount is at launch.
+
+**Other funding notes:**
+- **NFTs** aren't detailed here yet, since it needs a concrete answer to what's being sold — not treated as a funding source until scoped.
+- **LINGO token issuance and liquidity** is addressed separately in §4.4.
 
 ---
 

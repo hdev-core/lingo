@@ -6,7 +6,7 @@ core tables (+ the curated word bank), seeding words, and locking down
 
 **Workflow used for this project:** migrations and seeds are run manually
 through the Supabase SQL Editor (dashboard → SQL Editor → paste → Run), in
-file order. There's no `run_migrations.sh` runner script — it was removed.
+file order.
 The `.js` seed script is the one exception; it still runs from your terminal
 since it needs to fetch a word list over HTTP first.
 
