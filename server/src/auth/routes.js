@@ -1,38 +1,43 @@
 // src/auth/routes.js
 //
 // POST /api/auth/challenge  -- issue a one-time nonce for a Hive username
-// POST /api/auth/verify     -- verify a signed nonce, issue a session (httpOnly cookie)
-// GET  /api/auth/me         -- check current login status from the session cookie
+// POST /api/auth/verify     -- verify a signed nonce, issue a session cookie
+// GET  /api/auth/me         -- check current login status
 // POST /api/auth/refresh    -- extend an existing valid session
-// POST /api/auth/revoke     -- revoke the session and clear the cookie (logout)
+// POST /api/auth/revoke     -- revoke all tokens in the current generation
 
 const express = require('express');
 const rateLimit = require('express-rate-limit');
-const { createChallenge, consumeChallenge } = require('./challengeStore');
-const { verifyChallengeSignature } = require('./verifySignature');
+
+const {
+  createChallenge,
+  validateChallenge,
+  consumeChallenge,
+} = require('./challengeStore');
+
+const {
+  verifyChallengeSignature,
+  HiveAccountNotFoundError,
+  HiveRpcUnavailableError,
+} = require('./verifySignature');
+
 const {
   issueSession,
   verifySession,
   refreshSession,
   revokeSession,
 } = require('./session');
+
 const { allowedOrigins } = require('../lib/allowedOrigins');
 
 const router = express.Router();
 
-// Applies to login-critical routes only (challenge/verify/refresh), since
-// these are the ones an attacker would abuse for credential stuffing or
-// brute-forcing a session.
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
   message: { error: 'Too many requests, please try again later.' },
 });
 
-// A more lenient limiter for /me and /revoke -- these are called far more
-// often during normal use (every page load, every sign-out) and aren't a
-// meaningful brute-force target, so they get their own, larger budget
-// rather than sharing (or lacking) a limit.
 const readLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -41,9 +46,11 @@ const readLimiter = rateLimit({
 
 function requireTrustedOrigin(req, res, next) {
   const origin = req.headers.origin;
+
   if (!origin || !allowedOrigins.includes(origin)) {
     return res.status(403).json({ error: 'Untrusted origin' });
   }
+
   next();
 }
 
@@ -53,6 +60,7 @@ function normalizeUsername(raw) {
 }
 
 const SESSION_COOKIE_NAME = 'lingo_session';
+
 const cookieOptions = {
   httpOnly: true,
   secure: true,
@@ -61,95 +69,213 @@ const cookieOptions = {
   maxAge: 60 * 60 * 24 * 7 * 1000,
 };
 
+// clearCookie must match the cookie's identity/security attributes, but does
+// not need the original maxAge.
+const clearCookieOptions = {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'none',
+  path: '/',
+};
+
 router.post('/challenge', authLimiter, requireTrustedOrigin, (req, res) => {
   const username = normalizeUsername(req.body.username);
+
   if (!username) {
     return res.status(400).json({ error: 'username is required' });
   }
 
   try {
     const nonce = createChallenge(username);
-    res.status(200).json({ nonce });
+    return res.status(200).json({ nonce });
   } catch {
-    res.status(400).json({ error: 'Invalid username' });
+    return res.status(400).json({ error: 'Invalid username' });
   }
 });
 
 router.post('/verify', authLimiter, requireTrustedOrigin, async (req, res) => {
   const username = normalizeUsername(req.body.username);
   const { nonce, signature } = req.body;
+
   if (!username || !nonce || !signature) {
     return res
       .status(400)
       .json({ error: 'username, nonce, and signature are required' });
   }
 
-  const nonceIsValid = consumeChallenge(username, nonce);
-  if (!nonceIsValid) {
+  // Check first without consuming it. A temporary Hive RPC failure must not
+  // permanently burn a valid login challenge.
+  if (!validateChallenge(username, nonce)) {
     return res.status(401).json({ error: 'Challenge is invalid or expired' });
   }
 
+  let signatureIsValid;
+
   try {
-    const signatureIsValid = await verifyChallengeSignature({
+    signatureIsValid = await verifyChallengeSignature({
       username,
       nonce,
       signatureHex: signature,
     });
-
-    if (!signatureIsValid) {
-      return res.status(401).json({ error: 'Signature verification failed' });
-    }
-
-    const session = issueSession(username);
-
-    res.cookie(SESSION_COOKIE_NAME, session.token, cookieOptions);
-    res.status(200).json({ username: session.username, expiresAt: session.expiresAt });
   } catch (err) {
-    const message = err instanceof Error ? err.message : '';
-    if (message.includes('Hive account not found')) {
+    if (err instanceof HiveAccountNotFoundError) {
+      // "Account does not exist" is a decisive result, so this attempt is
+      // complete and the one-time nonce should be consumed.
+      if (!consumeChallenge(username, nonce)) {
+        return res
+          .status(401)
+          .json({ error: 'Challenge is invalid or expired' });
+      }
+
       return res.status(401).json({ error: 'Invalid Hive account' });
     }
+
+    if (err instanceof HiveRpcUnavailableError) {
+      // Infrastructure failure is retryable. Leave the nonce intact.
+      console.warn('Hive RPC unavailable during login verification:', err.message);
+
+      return res.status(503).json({
+        error: 'Hive network is temporarily unavailable. Please try again.',
+      });
+    }
+
     console.error('Login verification error:', err);
-    res.status(500).json({ error: 'Verification failed' });
+
+    // Unknown infrastructure/internal error: do not burn the challenge.
+    return res.status(500).json({ error: 'Verification failed' });
   }
+
+  if (!signatureIsValid) {
+    if (!consumeChallenge(username, nonce)) {
+      return res
+        .status(401)
+        .json({ error: 'Challenge is invalid or expired' });
+    }
+
+    return res.status(401).json({ error: 'Signature verification failed' });
+  }
+
+  let session;
+
+  try {
+    // Create/read the user's durable session generation before consuming the
+    // nonce. If PostgreSQL is temporarily unavailable, the user may retry the
+    // same still-valid challenge instead of starting over.
+    session = await issueSession(username);
+  } catch (err) {
+    console.error('Session issuance error:', err);
+
+    return res.status(503).json({
+      error: 'Session service is temporarily unavailable. Please try again.',
+    });
+  }
+
+  // Final one-time-use check. This also makes concurrent replays race safely:
+  // only the request that actually consumes the nonce may receive a session.
+  if (!consumeChallenge(username, nonce)) {
+    return res.status(401).json({ error: 'Challenge is invalid or expired' });
+  }
+
+  res.cookie(SESSION_COOKIE_NAME, session.token, cookieOptions);
+
+  return res.status(200).json({
+    username: session.username,
+    expiresAt: session.expiresAt,
+  });
 });
 
-router.get('/me', readLimiter, (req, res) => {
+router.get('/me', readLimiter, async (req, res) => {
   const token = req.cookies[SESSION_COOKIE_NAME];
+
   if (!token) {
     return res.status(401).json({ error: 'Not logged in' });
   }
 
-  const { valid, username } = verifySession(token);
-  if (!valid) {
-    return res.status(401).json({ error: 'Session is invalid or expired' });
-  }
+  try {
+    const { valid, username } = await verifySession(token);
 
-  res.status(200).json({ username });
+    if (!valid) {
+      return res
+        .status(401)
+        .json({ error: 'Session is invalid or expired' });
+    }
+
+    return res.status(200).json({ username });
+  } catch (err) {
+    console.error('Session verification error:', err);
+
+    return res.status(503).json({
+      error: 'Session service is temporarily unavailable. Please try again.',
+    });
+  }
 });
 
-router.post('/refresh', authLimiter, requireTrustedOrigin, (req, res) => {
-  const token = req.cookies[SESSION_COOKIE_NAME];
-  if (!token) {
-    return res.status(400).json({ error: 'No active session' });
-  }
+router.post(
+  '/refresh',
+  authLimiter,
+  requireTrustedOrigin,
+  async (req, res) => {
+    const token = req.cookies[SESSION_COOKIE_NAME];
 
-  const refreshed = refreshSession(token);
-  if (!refreshed) {
-    return res.status(401).json({ error: 'Session is invalid or expired' });
-  }
+    // No cookie means no authenticated session. Returning 401 also lets
+    // another browser tab correctly learn that logout happened elsewhere.
+    if (!token) {
+      return res.status(401).json({ error: 'No active session' });
+    }
 
-  res.cookie(SESSION_COOKIE_NAME, refreshed.token, cookieOptions);
-  res.status(200).json({ username: refreshed.username, expiresAt: refreshed.expiresAt });
-});
+    try {
+      const refreshed = await refreshSession(token);
 
-router.post('/revoke', readLimiter, requireTrustedOrigin, (req, res) => {
-  const token = req.cookies[SESSION_COOKIE_NAME];
-  if (token) {
-    revokeSession(token);
+      if (!refreshed) {
+        return res
+          .status(401)
+          .json({ error: 'Session is invalid or expired' });
+      }
+
+      res.cookie(SESSION_COOKIE_NAME, refreshed.token, cookieOptions);
+
+      return res.status(200).json({
+        username: refreshed.username,
+        expiresAt: refreshed.expiresAt,
+      });
+    } catch (err) {
+      console.error('Session refresh error:', err);
+
+      return res.status(503).json({
+        error: 'Session service is temporarily unavailable. Please try again.',
+      });
+    }
   }
-  res.clearCookie(SESSION_COOKIE_NAME, cookieOptions);
-  res.status(200).json({ revoked: true });
-});
+);
+
+router.post(
+  '/revoke',
+  readLimiter,
+  requireTrustedOrigin,
+  async (req, res) => {
+    const token = req.cookies[SESSION_COOKIE_NAME];
+
+    try {
+      if (token) {
+        await revokeSession(token);
+      }
+    } catch (err) {
+      console.error('Session revocation error:', err);
+
+      // Always remove this browser's cookie even if the database is
+      // temporarily unavailable. Do not falsely claim durable revocation
+      // succeeded, though.
+      res.clearCookie(SESSION_COOKIE_NAME, clearCookieOptions);
+
+      return res.status(503).json({
+        error: 'Could not fully revoke the session. Please try again.',
+      });
+    }
+
+    res.clearCookie(SESSION_COOKIE_NAME, clearCookieOptions);
+
+    return res.status(200).json({ revoked: true });
+  }
+);
 
 module.exports = router;
