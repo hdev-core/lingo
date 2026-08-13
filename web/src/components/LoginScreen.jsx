@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import './LoginScreen.css'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
+const AUTH_REQUEST_TIMEOUT_MS = 10 * 1000 // 10 seconds
 const KEYCHAIN_LOGIN_TIMEOUT_MS = 30 * 1000 // 30 seconds
 
 function normalizeUsername(raw) {
@@ -13,10 +14,26 @@ function normalizeUsername(raw) {
 
 function withTimeout(promise, ms, timeoutMessage) {
   let timeoutId
+
   const timeout = new Promise((_, reject) => {
     timeoutId = setTimeout(() => reject(new Error(timeoutMessage)), ms)
   })
+
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timeoutId))
+}
+
+async function fetchWithTimeout(url, options, ms = AUTH_REQUEST_TIMEOUT_MS) {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), ms)
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    })
+  } finally {
+    clearTimeout(timeoutId)
+  }
 }
 
 function LoginScreen() {
@@ -27,39 +44,44 @@ function LoginScreen() {
 
   async function handleLogin(e) {
     e.preventDefault()
-    const normalizedUsername = normalizeUsername(username)
-    if (!normalizedUsername) return
 
-    setStatus('signing')
+    const normalizedUsername = normalizeUsername(username)
+
+    if (!normalizedUsername) {
+      return
+    }
+
+    let phase = 'challenge'
+
+    setStatus('challenge')
     setErrorMessage('')
 
     try {
-      const challengeRes = await fetch(`${API_BASE}/api/auth/challenge`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ username: normalizedUsername }),
-      })
+      const challengeRes = await fetchWithTimeout(
+        `${API_BASE}/api/auth/challenge`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ username: normalizedUsername }),
+        }
+      )
+
       if (!challengeRes.ok) {
         const err = await challengeRes.json().catch(() => ({}))
         throw new Error(err.error || 'Could not get login challenge')
       }
+
       const { nonce } = await challengeRes.json()
 
-      // Aioha persists its own session separately from ours. If a stale
-      // session exists from an earlier attempt (possibly under a
-      // different account), clear ALL of Aioha's stored logins first --
-      // not just the current provider -- so login() doesn't reject with
-      // "Already logged in" (error 4901).
+      phase = 'signing'
+      setStatus('signing')
+
+      // Clear any stale Aioha login before starting a new Keychain login.
       if (aioha.isLoggedIn()) {
         await aioha.logoutAll()
       }
 
-      // aioha.login signs the nonce as a message via Keychain and
-      // establishes the Aioha session in one step. Wrapped with a
-      // timeout since a dismissed (not declined) Keychain popup never
-      // resolves on its own, which would otherwise leave the button
-      // stuck on "Waiting for Keychain..." forever.
       const loginResult = await withTimeout(
         aioha.login(Providers.Keychain, normalizedUsername, {
           msg: nonce,
@@ -73,18 +95,22 @@ function LoginScreen() {
         throw new Error(loginResult.error || 'Signing was cancelled or failed')
       }
 
+      phase = 'verifying'
       setStatus('verifying')
 
-      const verifyRes = await fetch(`${API_BASE}/api/auth/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          username: normalizedUsername,
-          nonce,
-          signature: loginResult.result,
-        }),
-      })
+      const verifyRes = await fetchWithTimeout(
+        `${API_BASE}/api/auth/verify`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            username: normalizedUsername,
+            nonce,
+            signature: loginResult.result,
+          }),
+        }
+      )
 
       if (!verifyRes.ok) {
         const err = await verifyRes.json().catch(() => ({}))
@@ -92,18 +118,32 @@ function LoginScreen() {
       }
 
       const session = await verifyRes.json()
+
       login(session)
       setStatus('idle')
     } catch (err) {
       console.error('Login error:', err)
-      const message =
-        err.name === 'TypeError'
-          ? 'Could not reach the server. Check your connection and try again.'
-          : err.message || 'Something went wrong logging in'
+
+      let message
+
+      if (err.name === 'AbortError') {
+        message =
+          phase === 'challenge'
+            ? 'The server took too long to create a login challenge. Please try again.'
+            : 'The server took too long to verify your login. Please try again.'
+      } else if (err.name === 'TypeError') {
+        message = 'Could not reach the server. Check your connection and try again.'
+      } else {
+        message = err.message || 'Something went wrong logging in'
+      }
+
       setErrorMessage(message)
       setStatus('error')
     }
   }
+
+  const isBusy =
+    status === 'challenge' || status === 'signing' || status === 'verifying'
 
   return (
     <div className="login-screen">
@@ -114,6 +154,7 @@ function LoginScreen() {
         <label htmlFor="hive-username" className="sr-only">
           Hive username
         </label>
+
         <input
           id="hive-username"
           type="text"
@@ -123,14 +164,15 @@ function LoginScreen() {
           autoComplete="username"
           autoCapitalize="none"
           spellCheck="false"
-          disabled={status === 'signing' || status === 'verifying'}
+          disabled={isBusy}
         />
 
         <button
           type="submit"
           className="login-button"
-          disabled={!username.trim() || status === 'signing' || status === 'verifying'}
+          disabled={!username.trim() || isBusy}
         >
+          {status === 'challenge' && 'Connecting to server...'}
           {status === 'signing' && 'Waiting for Keychain...'}
           {status === 'verifying' && 'Verifying...'}
           {(status === 'idle' || status === 'error') && 'Log in with Keychain'}
