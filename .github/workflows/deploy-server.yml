@@ -1,27 +1,53 @@
 name: Deploy server to Hetzner
+
 permissions:
   contents: read
+
 "on":
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
       - 'server/**'
+
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 10 # fail fast rather than hang, same reasoning as the frontend deploy workflows
+    timeout-minutes: 10
+
     steps:
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.0.3
+
         with:
           host: ${{ secrets.HETZNER_HOST }}
           username: ${{ secrets.HETZNER_SSH_USER }}
           key: ${{ secrets.HETZNER_SSH_KEY }}
+
           script: |
+            set -e
+
             cd ${{ secrets.HETZNER_LINGO_PATH }}/server
-            git pull origin main
+
+            git pull --ff-only origin main
+
+            if [ ! -s data/valid-guesses.txt ]; then
+              echo "ERROR: data/valid-guesses.txt is missing"
+              exit 1
+            fi
+
             npm ci --omit=dev
-            npx pm2 restart ecosystem.config.js --update-env || npx pm2 start ecosystem.config.js
+
+            mkdir -p logs
+
+            npx pm2 restart ecosystem.config.js --update-env || \
+              npx pm2 start ecosystem.config.js
+
             npx pm2 save
+
+            sleep 2
+
+            curl --fail --silent --show-error \
+              http://127.0.0.1:3001/health

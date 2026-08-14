@@ -1,17 +1,7 @@
 // src/hive/waxClient.js
 //
 // Server-side wrapper around @hiveio/wax (NOT dhive) for building and
-// signing the app account's own custom_json operations:
-//   - lingo_commit  (start of day, posting key)
-//   - lingo_reveal  (end of day, posting key)
-//
-// Player-broadcast lingo_guess ops are signed client-side through Aioha +
-// Hive Keychain, never here -- this module never touches a player's key.
-//
-// NOTE: @hiveio/wax and @hiveio/beekeeper are ESM-only packages (no
-// "require" export condition). Since the rest of this workspace is
-// CommonJS, they're loaded here with dynamic import() -- confirmed working
-// (require() throws ERR_PACKAGE_PATH_NOT_EXPORTED, import() doesn't).
+// signing the app account's own custom_json operations.
 
 const { randomUUID } = require('crypto');
 const hiveConfig = require('./config');
@@ -42,12 +32,7 @@ async function getWallet() {
       const { default: beekeeperFactory } = await import('@hiveio/beekeeper');
       const bk = await beekeeperFactory();
       const session = bk.createSession('lingo-app-session');
-      const { wallet } = await session.createWallet(
-        `lingo-app-wallet-${randomUUID()}`,
-        undefined,
-        true
-      );
-      //const { wallet } = await session.createWallet('lingo-app-wallet');
+      const { wallet } = await session.createWallet(`lingo-app-wallet-${randomUUID()}`, undefined, true);
       const publicKey = await wallet.importKey(postingKey);
       return { wallet, publicKey };
     })();
@@ -75,7 +60,6 @@ async function broadcastAppCustomJson({ id, json }) {
 
   tx.sign(wallet, publicKey);
   const txId = tx.id;
-
   await chain.broadcast(tx);
 
   return { txId, raw: undefined };
@@ -84,23 +68,36 @@ async function broadcastAppCustomJson({ id, json }) {
 async function broadcastCommit({ puzzleDate, puzzleNumber, wordLength, commitHash }) {
   return broadcastAppCustomJson({
     id: 'lingo_commit',
-    json: {
-      puzzle_date: puzzleDate,
-      puzzle_number: puzzleNumber,
-      word_length: wordLength,
-      commit_hash: commitHash,
-    },
+    json: { puzzle_date: puzzleDate, puzzle_number: puzzleNumber, word_length: wordLength, commit_hash: commitHash },
   });
 }
 
 async function broadcastReveal({ puzzleDate, answer, secret }) {
   return broadcastAppCustomJson({
     id: 'lingo_reveal',
-    json: {
-      puzzle_date: puzzleDate,
-      answer,
-      secret,
-    },
+    json: { puzzle_date: puzzleDate, answer, secret },
+  });
+}
+
+// FIX (review #7): smoke tests use a COMPLETELY DIFFERENT operation id
+// (lingo_smoke_*, not lingo_commit/lingo_reveal). This makes it
+// structurally impossible for a smoke-test broadcast to be confused with,
+// or shadow, a real day's commit/reveal -- regardless of what date the
+// smoke test happens to use. haf.js's default id filter for real
+// operations (lingo_commit/lingo_reveal/lingo_guess) will simply never
+// match a smoke op, full stop -- this isn't a "best effort" mitigation,
+// it's a structural guarantee.
+async function broadcastSmokeCommit({ puzzleDate, commitHash }) {
+  return broadcastAppCustomJson({
+    id: 'lingo_smoke_commit',
+    json: { puzzle_date: puzzleDate, commit_hash: commitHash, smoke_test: true },
+  });
+}
+
+async function broadcastSmokeReveal({ puzzleDate, answer, secret }) {
+  return broadcastAppCustomJson({
+    id: 'lingo_smoke_reveal',
+    json: { puzzle_date: puzzleDate, answer, secret, smoke_test: true },
   });
 }
 
@@ -108,4 +105,6 @@ module.exports = {
   getChain,
   broadcastCommit,
   broadcastReveal,
+  broadcastSmokeCommit,
+  broadcastSmokeReveal,
 };

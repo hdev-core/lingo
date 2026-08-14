@@ -8,6 +8,7 @@
     "start": "node --env-file=.env src/index.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "test": "node --test \"test/**/*.test.js\"",
     "format": "prettier --write .",
     "mainnet:smoke": "node --env-file=.env scripts/mainnet_smoke_test.js",
     "puzzle:commit": "node scripts/daily_commit.js",
@@ -17,8 +18,10 @@
   "dependencies": {
     "@hiveio/beekeeper": "^1.28.7-rc0",
     "@hiveio/wax": "^2.0.2",
+    "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
     "hive-tx": "^7.2.0",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.12.0",
