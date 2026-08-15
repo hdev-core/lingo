@@ -55,29 +55,25 @@ async function getTokenVersion(username) {
   return rows[0].token_version;
 }
 
-async function ensureUserAndGetTokenVersion(username) {
-  // The users table is defined as one row per Hive account that has logged
-  // into LINGO. Existing gameplay/stat columns already have defaults, so
-  // this creates only the account row when it does not already exist.
-  await pool.query(
-    `INSERT INTO users (hive_username)
-     VALUES ($1)
-     ON CONFLICT (hive_username) DO NOTHING`,
+async function issueSession(username) {
+  // Every fresh login starts a new token generation. This makes any delayed
+  // revoke from an older login stale before the new session is issued.
+  // Refresh does not call this function, so normal refreshes stay within
+  // the same generation.
+  const { rows } = await pool.query(
+    `INSERT INTO users (hive_username, token_version)
+     VALUES ($1, 1)
+     ON CONFLICT (hive_username)
+     DO UPDATE SET token_version = users.token_version + 1
+     RETURNING token_version`,
     [username]
   );
 
-  const tokenVersion = await getTokenVersion(username);
-
-  if (tokenVersion === null) {
+  if (rows.length === 0) {
     throw new Error('Unable to initialize session state for user');
   }
 
-  return tokenVersion;
-}
-
-async function issueSession(username) {
-  const tokenVersion = await ensureUserAndGetTokenVersion(username);
-  return signSession(username, tokenVersion);
+  return signSession(username, rows[0].token_version);
 }
 
 async function verifySession(token) {

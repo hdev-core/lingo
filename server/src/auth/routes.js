@@ -78,7 +78,7 @@ const clearCookieOptions = {
   path: '/',
 };
 
-router.post('/challenge', authLimiter, requireTrustedOrigin, (req, res) => {
+router.post('/challenge', requireTrustedOrigin, authLimiter, (req, res) => {
   const username = normalizeUsername(req.body.username);
 
   if (!username) {
@@ -93,7 +93,7 @@ router.post('/challenge', authLimiter, requireTrustedOrigin, (req, res) => {
   }
 });
 
-router.post('/verify', authLimiter, requireTrustedOrigin, async (req, res) => {
+router.post('/verify', requireTrustedOrigin, authLimiter, async (req, res) => {
   const username = normalizeUsername(req.body.username);
   const { nonce, signature } = req.body;
 
@@ -119,8 +119,8 @@ router.post('/verify', authLimiter, requireTrustedOrigin, async (req, res) => {
     });
   } catch (err) {
     if (err instanceof HiveAccountNotFoundError) {
-      // "Account does not exist" is a decisive result, so this attempt is
-      // complete and the one-time nonce should be consumed.
+      // Account-not-found is a decisive result, so this attempt is complete
+      // and the one-time challenge should be consumed.
       if (!consumeChallenge(username, nonce)) {
         return res
           .status(401)
@@ -132,7 +132,10 @@ router.post('/verify', authLimiter, requireTrustedOrigin, async (req, res) => {
 
     if (err instanceof HiveRpcUnavailableError) {
       // Infrastructure failure is retryable. Leave the nonce intact.
-      console.warn('Hive RPC unavailable during login verification:', err.message);
+      console.warn(
+        'Hive RPC unavailable during login verification:',
+        err.message
+      );
 
       return res.status(503).json({
         error: 'Hive network is temporarily unavailable. Please try again.',
@@ -155,12 +158,15 @@ router.post('/verify', authLimiter, requireTrustedOrigin, async (req, res) => {
     return res.status(401).json({ error: 'Signature verification failed' });
   }
 
+  // Claim the one-time challenge before creating a new token generation.
+  // This ensures concurrent replays cannot both advance token_version.
+  if (!consumeChallenge(username, nonce)) {
+    return res.status(401).json({ error: 'Challenge is invalid or expired' });
+  }
+
   let session;
 
   try {
-    // Create/read the user's durable session generation before consuming the
-    // nonce. If PostgreSQL is temporarily unavailable, the user may retry the
-    // same still-valid challenge instead of starting over.
     session = await issueSession(username);
   } catch (err) {
     console.error('Session issuance error:', err);
@@ -168,12 +174,6 @@ router.post('/verify', authLimiter, requireTrustedOrigin, async (req, res) => {
     return res.status(503).json({
       error: 'Session service is temporarily unavailable. Please try again.',
     });
-  }
-
-  // Final one-time-use check. This also makes concurrent replays race safely:
-  // only the request that actually consumes the nonce may receive a session.
-  if (!consumeChallenge(username, nonce)) {
-    return res.status(401).json({ error: 'Challenge is invalid or expired' });
   }
 
   res.cookie(SESSION_COOKIE_NAME, session.token, cookieOptions);
@@ -212,13 +212,11 @@ router.get('/me', readLimiter, async (req, res) => {
 
 router.post(
   '/refresh',
-  authLimiter,
   requireTrustedOrigin,
+  authLimiter,
   async (req, res) => {
     const token = req.cookies[SESSION_COOKIE_NAME];
 
-    // No cookie means no authenticated session. Returning 401 also lets
-    // another browser tab correctly learn that logout happened elsewhere.
     if (!token) {
       return res.status(401).json({ error: 'No active session' });
     }
@@ -250,8 +248,8 @@ router.post(
 
 router.post(
   '/revoke',
-  readLimiter,
   requireTrustedOrigin,
+  readLimiter,
   async (req, res) => {
     const token = req.cookies[SESSION_COOKIE_NAME];
 
