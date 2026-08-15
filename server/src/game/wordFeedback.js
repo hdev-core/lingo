@@ -7,9 +7,10 @@
 // yellows as there are *remaining* unmatched copies of that letter in the
 // answer, after greens are already accounted for.
 //
-// Verified against known duplicate-letter cases (apple/paper, sassy/assay,
-// speed/erase, kitty/tithe) -- none over-count yellows for repeated
-// letters.
+/**
+ * Wordle-style feedback with duplicate-letter handling.
+ * Exact matches are resolved first, then remaining letter counts.
+ */
 
 const STATES = { CORRECT: 'correct', PRESENT: 'present', ABSENT: 'absent' };
 

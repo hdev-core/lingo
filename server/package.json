@@ -1,5 +1,5 @@
 {
-  "name": "server",
+  "name": "api",
   "private": true,
   "version": "0.0.0",
   "main": "src/index.js",
@@ -18,10 +18,11 @@
   "dependencies": {
     "@hiveio/beekeeper": "^1.28.7-rc0",
     "@hiveio/wax": "^2.0.2",
-    "cors": "^2.8.5",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^4.19.2",
-    "express-rate-limit": "^7.4.0",
+    "express-rate-limit": "^8.6.2",
     "hive-tx": "^7.2.0",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.12.0",
@@ -34,5 +35,10 @@
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.9.0",
     "prettier": "^3.3.3"
+  },
+  "overrides": {
+    "hive-tx": {
+      "bs58": "^5.0.0"
+    }
   }
 }

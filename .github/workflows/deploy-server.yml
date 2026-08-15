@@ -12,8 +12,6 @@ permissions:
 
   workflow_dispatch:
 
-# Never allow two production deployments to modify the server at the
-# same time. Do not cancel a deployment that is already in progress.
 concurrency:
   group: lingo-server-production
   cancel-in-progress: false
@@ -23,31 +21,74 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
+    environment:
+      name: production
+      url: https://hivelingo.greateck.com
+
     steps:
       - name: Deploy over SSH
         uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262
+
+        env:
+          LINGO_PATH: ${{ secrets.HETZNER_LINGO_PATH }}
+          DEPLOY_SHA: ${{ github.sha }}
 
         with:
           host: ${{ secrets.HETZNER_HOST }}
           username: ${{ secrets.HETZNER_SSH_USER }}
           key: ${{ secrets.HETZNER_SSH_KEY }}
 
-          # Pin the SSH host identity so the deploy key is never sent
-          # to an unexpected host.
           fingerprint: SHA256:CRHSMARNgnBQ7KUaDz+Tl9C/aFOSmQeI5GceF17mq2s
 
+          envs: LINGO_PATH,DEPLOY_SHA
+
           script: |
-            set -e
+            bash -se <<'DEPLOY_SCRIPT'
+            set -Eeuo pipefail
 
-            cd ${{ secrets.HETZNER_LINGO_PATH }}/server
+            cd "$LINGO_PATH"
 
-            echo "Updating server from main..."
-            git pull --ff-only origin main
+            PREVIOUS_SHA="$(git rev-parse HEAD)"
+
+            rollback() {
+              exit_code=$?
+
+              trap - ERR
+              set +e
+
+              echo "Deployment failed. Rolling back to ${PREVIOUS_SHA}..."
+
+              cd "$LINGO_PATH"
+              git checkout --force "$PREVIOUS_SHA"
+
+              cd server
+              npm ci --omit=dev
+              mkdir -p logs
+
+              npx pm2 restart ecosystem.config.js --update-env || \
+                npx pm2 start ecosystem.config.js
+
+              npx pm2 save
+
+              echo "Rollback attempt finished."
+              exit "$exit_code"
+            }
+
+            trap rollback ERR
+
+            echo "Fetching release commit ${DEPLOY_SHA}..."
+
+            git fetch origin main
+            git cat-file -e "${DEPLOY_SHA}^{commit}"
+            git checkout --force "$DEPLOY_SHA"
+
+            cd server
 
             echo "Checking required valid-guesses data..."
+
             if [ ! -s data/valid-guesses.txt ]; then
               echo "ERROR: data/valid-guesses.txt is missing or empty"
-              exit 1
+              false
             fi
 
             echo "Installing production dependencies..."
@@ -56,20 +97,32 @@ jobs:
             mkdir -p logs
 
             echo "Restarting API..."
+
             npx pm2 restart ecosystem.config.js --update-env || \
               npx pm2 start ecosystem.config.js
 
             npx pm2 save
 
-            echo "Waiting for API health check..."
+            APP_PORT="$(
+              node --env-file=.env -e "process.stdout.write(process.env.PORT || '3001')"
+            )"
+
+            case "$APP_PORT" in
+              ''|*[!0-9]*)
+                echo "ERROR: invalid PORT value"
+                false
+                ;;
+            esac
+
+            echo "Waiting for API health check on port ${APP_PORT}..."
+
+            HEALTHY=false
 
             for attempt in 1 2 3 4 5 6; do
               if curl --fail --silent --show-error \
-                http://127.0.0.1:3001/health; then
-
-                echo
-                echo "Health check passed."
-                exit 0
+                "http://127.0.0.1:${APP_PORT}/health" > /dev/null; then
+                HEALTHY=true
+                break
               fi
 
               echo "Health check attempt ${attempt}/6 failed."
@@ -79,9 +132,17 @@ jobs:
               fi
             done
 
-            echo "ERROR: API did not become healthy."
+            if [ "$HEALTHY" != "true" ]; then
+              echo "ERROR: API did not become healthy."
 
-            npx pm2 status || true
-            npx pm2 logs lingo-server --lines 50 --nostream || true
+              npx pm2 status || true
+              npx pm2 logs lingo-server --lines 50 --nostream || true
 
-            exit 1
+              false
+            fi
+
+            trap - ERR
+
+            echo "Deployment successful: ${DEPLOY_SHA}"
+
+            DEPLOY_SCRIPT

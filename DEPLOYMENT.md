@@ -168,3 +168,17 @@ box's own `.env` is set up once by hand over SSH and never touched by any
 automated deploy — deploys only pull code, never write secrets. Hetzner
 SSH credentials (host/user/password-or-key) were shared privately via DM,
 never posted in the repo, an issue, or a PR.
+
+## 6. SSH host fingerprint
+
+The Hetzner production host uses the following ED25519 SHA-256 fingerprint:
+
+`SHA256:CRHSMARNgnBQ7KUaDz+Tl9C/aFOSmQeI5GceF17mq2s`
+
+It was verified directly on the production host with:
+
+`ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub -E sha256`
+
+It can also be independently compared from a client using `ssh-keyscan`.
+
+If the server is rebuilt or its SSH host keys are regenerated, this fingerprint must be re-verified and the deployment workflow updated.

@@ -43,6 +43,21 @@ test('duplicate guess letters are not over-counted', () => {
   );
 });
 
+test('duplicate non-green letters are not over-counted', () => {
+  const fb = getFeedback('steal', 'eerie');
+
+  assert.deepEqual(
+    fb.map((f) => f.state),
+    [
+      STATES.PRESENT,
+      STATES.ABSENT,
+      STATES.ABSENT,
+      STATES.ABSENT,
+      STATES.ABSENT,
+    ]
+  );
+});
+
 test('duplicate-letter case: guess has more copies of a letter than the answer', () => {
   // answer "kitty" has one t at position 2; guess "tithe" has t at 0 and 2.
   const fb = getFeedback('kitty', 'tithe');
