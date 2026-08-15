@@ -8,13 +8,15 @@
     "start": "node --env-file=.env src/index.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write .",
-    "testnet:smoke": "node --env-file=.env scripts/testnet_smoke_test.js"
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@hiveio/beekeeper": "^1.28.7-rc0",
     "@hiveio/wax": "^2.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
     "express": "^4.19.2",
+    "express-rate-limit": "^8.6.2",
     "hive-tx": "^7.2.0",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.12.0",
@@ -26,5 +28,10 @@
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.9.0",
     "prettier": "^3.3.3"
+  },
+  "overrides": {
+    "hive-tx": {
+      "bs58": "^5.0.0"
+    }
   }
 }
