@@ -1,14 +1,19 @@
 // src/hive/config.js
 //
-// Single source of truth for which Hive network this process talks to.
-// LINGO is mainnet-only -- there is no testnet mode. This file has no
-// branch to accidentally flip; if that ever needs to change, it should
-// be a deliberate, reviewed addition, not a stray env var.
+// Single source of truth for which Hive network and RPC authorities this
+// process trusts. LINGO is mainnet-only, and authentication may only use
+// the hardcoded HTTPS mainnet nodes below.
+
+const MAINNET_API_ENDPOINTS = Object.freeze([
+  'https://api.hive.blog',
+  'https://api.openhive.network',
+]);
 
 const MAINNET = {
   network: 'mainnet',
   chainId: 'beeab0de00000000000000000000000000000000000000000000000000000000',
-  apiEndpoint: 'https://api.hive.blog',
+  apiEndpoint: MAINNET_API_ENDPOINTS[0],
+  apiEndpoints: MAINNET_API_ENDPOINTS,
   addressPrefix: 'STM',
 };
 

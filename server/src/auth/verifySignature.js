@@ -3,8 +3,8 @@
 // Verifies that a login challenge was signed by the claimed Hive account's
 // posting key.
 //
-// Account lookup is attempted against the configured mainnet RPC first and
-// then a separate public Hive fallback. Temporary HTTP/RPC/timeout failures
+// Account lookup is attempted against a hardcoded list of trusted HTTPS
+// mainnet RPC nodes.Temporary HTTP/RPC/timeout failures
 // are distinguished from a decisive "account does not exist" result.
 
 const hiveConfig = require('../hive/config');
@@ -12,7 +12,7 @@ const { Signature, PublicKey } = require('hive-tx');
 const crypto = require('crypto');
 
 const HIVE_RPC_TIMEOUT_MS = 8000;
-const DEFAULT_FALLBACK_HIVE_NODE = 'https://api.openhive.network';
+
 
 class HiveAccountNotFoundError extends Error {
   constructor(username) {
@@ -31,12 +31,8 @@ class HiveRpcUnavailableError extends Error {
 }
 
 function getHiveRpcNodes() {
-  const fallbackNode =
-    process.env.HIVE_API_FALLBACK_NODE || DEFAULT_FALLBACK_HIVE_NODE;
-
-  return [...new Set([hiveConfig.apiEndpoint, fallbackNode].filter(Boolean))];
+  return [...new Set(hiveConfig.apiEndpoints)];
 }
-
 async function fetchHiveAccount(node, username) {
   let response;
 
