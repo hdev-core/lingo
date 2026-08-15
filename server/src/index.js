@@ -1,7 +1,16 @@
+const path = require('path');
+
+require('dotenv').config({
+  path: path.resolve(__dirname, '../.env'),
+});
+
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+
 const authRoutes = require('./auth/routes');
+const guessRouter = require('./routes/guess');
+const verifyRouter = require('./routes/verify');
 const { allowedOrigins } = require('./lib/allowedOrigins');
 
 const app = express();
@@ -34,6 +43,8 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api', guessRouter);
+app.use('/api', verifyRouter);
 
 app.listen(PORT, () => {
   console.log(`api listening on port ${PORT}`);

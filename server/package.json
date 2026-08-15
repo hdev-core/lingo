@@ -8,18 +8,25 @@
     "start": "node --env-file=.env src/index.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write ."
+    "test": "node --test \"test/**/*.test.js\"",
+    "format": "prettier --write .",
+    "mainnet:smoke": "node --env-file=.env scripts/mainnet_smoke_test.js",
+    "puzzle:commit": "node scripts/daily_commit.js",
+    "puzzle:reveal": "node scripts/daily_reveal.js",
+    "fetch:valid-guesses": "node scripts/fetch_valid_guesses.js"
   },
   "dependencies": {
     "@hiveio/beekeeper": "^1.28.7-rc0",
     "@hiveio/wax": "^2.0.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
     "express": "^4.19.2",
     "express-rate-limit": "^8.6.2",
     "hive-tx": "^7.2.0",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.12.0",
+    "pm2": "^7.0.3",
     "sscjs": "^0.0.9"
   },
   "devDependencies": {

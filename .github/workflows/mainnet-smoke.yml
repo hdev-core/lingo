@@ -1,0 +1,42 @@
+name: Mainnet Commit/Reveal Smoke Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type BROADCAST_MAINNET_SMOKE to authorize permanent mainnet transactions
+        required: true
+        type: string
+
+jobs:
+  smoke:
+    if: ${{ inputs.confirmation == 'BROADCAST_MAINNET_SMOKE' }}
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: server
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run mainnet commit/reveal smoke test
+        run: node scripts/mainnet_smoke_test.js
+        env:
+          HIVE_NETWORK: mainnet
+          MAINNET_SMOKE_CONFIRMATION: ${{ inputs.confirmation }}
+          HIVE_APP_ACCOUNT: ${{ secrets.HIVE_APP_ACCOUNT }}
+          HIVE_APP_POSTING_KEY: ${{ secrets.HIVE_APP_POSTING_KEY }}
+          HIVE_ENGINE_NODE: https://api.hive-engine.com/rpc
+          LINGO_TOKEN_SYMBOL: LINGO
