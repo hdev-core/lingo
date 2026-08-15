@@ -144,3 +144,6 @@ server/storage_root-node/
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Vercel
+.vercel/

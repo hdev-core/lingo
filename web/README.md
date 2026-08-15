@@ -1,3 +1,22 @@
+# LINGO — Web (Frontend)
+
+React + Vite frontend for LINGO.
+
+## Local development
+
+## Known limitation: HTTP + non-localhost origins
+
+The session cookie is set with `Secure` and `SameSite=None`, which requires
+HTTPS. Browsers treat `localhost` as a trustworthy origin even over plain
+HTTP, so the default `npm run dev` workflow works fine. However, testing
+over plain HTTP on any other origin — e.g. `vite --host` for phone/LAN
+testing, or an HTTP staging box — will silently fail: the UI may appear
+logged in, but the browser drops the cookie and `/api/auth/me` returns 401
+with no visible error. Use HTTPS (or a tunnel like ngrok) for any non-
+localhost testing.
+
+---
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.

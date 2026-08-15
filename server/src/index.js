@@ -16,9 +16,12 @@ const { allowedOrigins } = require('./lib/allowedOrigins');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Trust exactly 1 hop: the reverse proxy in front of this server.
-// Do not use `true`, because that would trust the entire
-// X-Forwarded-For chain.
+// Trust exactly 1 hop: the reverse proxy in front of this server (Hetzner,
+// terminating TLS via nginx/Caddy in front of this Node process). This
+// value MUST match the real deployment topology -- if more or fewer
+// proxies sit in front of this app, update the number accordingly.
+// `true` is deliberately avoided: it trusts the entire X-Forwarded-For
+// chain, which lets a client spoof their own rate-limit bucket.
 app.set('trust proxy', 1);
 
 app.use(
