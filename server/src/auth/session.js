@@ -2,13 +2,16 @@
 //
 // Issues, verifies, refreshes, and revokes player login sessions as JWTs.
 //
-// Revocation is backed by users.token_version in PostgreSQL instead of an
-// in-memory denylist. Every issued JWT carries the user's current version.
-// Logout increments the database value, so every token from the older
-// generation becomes invalid at once, including pre-refresh tokens.
+// token_version is a monotonically increasing login-generation counter.
+// Multiple generations may remain valid simultaneously, so signing in on a
+// second device does not invalidate an existing session.
 //
-// Because token_version lives in PostgreSQL, revocation survives server
-// restarts and works across server instances.
+// revoked_through_version is a durable revocation watermark. Logout advances
+// it only through the generation represented by the token being revoked.
+// Therefore, a delayed revoke from an older session cannot kill a newer login.
+//
+// Both values live in PostgreSQL, so revocation survives server restarts and
+// works across server instances.
 
 const jwt = require('jsonwebtoken');
 const { pool } = require('../db');
@@ -42,9 +45,11 @@ function signSession(username, tokenVersion) {
   };
 }
 
-async function getTokenVersion(username) {
+async function getSessionState(username) {
   const { rows } = await pool.query(
-    'SELECT token_version FROM users WHERE hive_username = $1',
+    `SELECT token_version, revoked_through_version
+     FROM users
+     WHERE hive_username = $1`,
     [username]
   );
 
@@ -52,14 +57,16 @@ async function getTokenVersion(username) {
     return null;
   }
 
-  return rows[0].token_version;
+  return {
+    tokenVersion: rows[0].token_version,
+    revokedThroughVersion: rows[0].revoked_through_version,
+  };
 }
 
 async function issueSession(username) {
-  // Every fresh login starts a new token generation. This makes any delayed
-  // revoke from an older login stale before the new session is issued.
-  // Refresh does not call this function, so normal refreshes stay within
-  // the same generation.
+  // Every successful fresh login receives a unique monotonically increasing
+  // generation. Older generations stay valid until explicitly covered by the
+  // revocation watermark.
   const { rows } = await pool.query(
     `INSERT INTO users (hive_username, token_version)
      VALUES ($1, 1)
@@ -89,16 +96,18 @@ async function verifySession(token) {
 
   if (
     typeof payload.username !== 'string' ||
-    !Number.isInteger(payload.tokenVersion)
+    !Number.isInteger(payload.tokenVersion) ||
+    payload.tokenVersion < 0
   ) {
     return { valid: false, username: null, tokenVersion: null };
   }
 
-  const currentTokenVersion = await getTokenVersion(payload.username);
+  const state = await getSessionState(payload.username);
 
   if (
-    currentTokenVersion === null ||
-    payload.tokenVersion !== currentTokenVersion
+    state === null ||
+    payload.tokenVersion > state.tokenVersion ||
+    payload.tokenVersion <= state.revokedThroughVersion
   ) {
     return { valid: false, username: null, tokenVersion: null };
   }
@@ -117,11 +126,8 @@ async function refreshSession(token) {
     return null;
   }
 
-  // Important: preserve the version that was actually verified rather than
-  // re-reading the newest version here. If logout increments token_version
-  // while a refresh is already in flight, this refreshed token remains on
-  // the old version and is therefore invalid rather than resurrecting the
-  // logged-out session.
+  // Refresh stays in the same generation. If that generation is later covered
+  // by the revocation watermark, refreshed tokens from it are invalid too.
   return signSession(username, tokenVersion);
 }
 
@@ -139,19 +145,22 @@ async function revokeSession(token) {
 
   if (
     typeof payload.username !== 'string' ||
-    !Number.isInteger(payload.tokenVersion)
+    !Number.isInteger(payload.tokenVersion) ||
+    payload.tokenVersion < 0
   ) {
     return false;
   }
 
-  // Only a token from the CURRENT generation may advance the generation.
-  // An already-stale token must not be able to log out a newer session.
+  // Revoke this generation and any older generations, but never a login
+  // created later. This makes delayed stale revokes harmless to newer sessions.
   const result = await pool.query(
     `UPDATE users
-     SET token_version = token_version + 1
+     SET revoked_through_version =
+       GREATEST(revoked_through_version, $2)
      WHERE hive_username = $1
-       AND token_version = $2
-     RETURNING token_version`,
+       AND $2 <= token_version
+       AND $2 > revoked_through_version
+     RETURNING revoked_through_version`,
     [payload.username, payload.tokenVersion]
   );
 

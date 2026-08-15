@@ -4,11 +4,11 @@
 // before they sign in via Hive Keychain.
 //
 // Keyed by nonce (not username): a challenge issued to one username no
-// longer overwrites another in-flight challenge for the same username,
-// closing the targeted-eviction case.
+// longer overwrites another in-flight challenge for the same username.
 //
-// MVP note: this store is still process-local. Durable session revocation
-// is handled separately through PostgreSQL token_version.
+// A challenge may be temporarily claimed while verification/session issuance
+// is in progress. Infrastructure failures release the claim so the same nonce
+// remains retryable; decisive results consume it.
 
 const crypto = require('crypto');
 
@@ -30,7 +30,7 @@ function isValidHiveUsername(username) {
   );
 }
 
-const challenges = new Map(); // nonce -> { username, expiresAt }
+const challenges = new Map(); // nonce -> { username, expiresAt, claimed }
 
 function evictOldestEntry() {
   const oldestKey = challenges.keys().next().value;
@@ -38,6 +38,25 @@ function evictOldestEntry() {
   if (oldestKey !== undefined) {
     challenges.delete(oldestKey);
   }
+}
+
+function getValidEntry(username, providedNonce) {
+  const entry = challenges.get(providedNonce);
+
+  if (!entry) {
+    return null;
+  }
+
+  if (Date.now() > entry.expiresAt) {
+    challenges.delete(providedNonce);
+    return null;
+  }
+
+  if (entry.username !== username) {
+    return null;
+  }
+
+  return entry;
 }
 
 function createChallenge(username) {
@@ -65,28 +84,56 @@ function createChallenge(username) {
 
   const expiresAt = Date.now() + CHALLENGE_TTL_MS;
 
-  challenges.set(nonce, { username, expiresAt });
+  challenges.set(nonce, {
+    username,
+    expiresAt,
+    claimed: false,
+  });
 
   return nonce;
 }
 
 function validateChallenge(username, providedNonce) {
-  const entry = challenges.get(providedNonce);
+  return getValidEntry(username, providedNonce) !== null;
+}
 
-  if (!entry) {
+function claimChallenge(username, providedNonce) {
+  const entry = getValidEntry(username, providedNonce);
+
+  if (!entry || entry.claimed) {
     return false;
   }
 
-  if (Date.now() > entry.expiresAt) {
-    challenges.delete(providedNonce);
+  entry.claimed = true;
+  return true;
+}
+
+function releaseChallenge(username, providedNonce) {
+  const entry = getValidEntry(username, providedNonce);
+
+  if (!entry || !entry.claimed) {
     return false;
   }
 
-  return entry.username === username;
+  entry.claimed = false;
+  return true;
+}
+
+function consumeClaimedChallenge(username, providedNonce) {
+  const entry = getValidEntry(username, providedNonce);
+
+  if (!entry || !entry.claimed) {
+    return false;
+  }
+
+  challenges.delete(providedNonce);
+  return true;
 }
 
 function consumeChallenge(username, providedNonce) {
-  if (!validateChallenge(username, providedNonce)) {
+  const entry = getValidEntry(username, providedNonce);
+
+  if (!entry || entry.claimed) {
     return false;
   }
 
@@ -97,6 +144,9 @@ function consumeChallenge(username, providedNonce) {
 module.exports = {
   createChallenge,
   validateChallenge,
+  claimChallenge,
+  releaseChallenge,
+  consumeClaimedChallenge,
   consumeChallenge,
   isValidHiveUsername,
 };

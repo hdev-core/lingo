@@ -4,15 +4,16 @@
 // POST /api/auth/verify     -- verify a signed nonce, issue a session cookie
 // GET  /api/auth/me         -- check current login status
 // POST /api/auth/refresh    -- extend an existing valid session
-// POST /api/auth/revoke     -- revoke all tokens in the current generation
+// POST /api/auth/revoke     -- revoke this session generation and older ones
 
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 
 const {
   createChallenge,
-  validateChallenge,
-  consumeChallenge,
+  claimChallenge,
+  releaseChallenge,
+  consumeClaimedChallenge,
 } = require('./challengeStore');
 
 const {
@@ -69,8 +70,6 @@ const cookieOptions = {
   maxAge: 60 * 60 * 24 * 7 * 1000,
 };
 
-// clearCookie must match the cookie's identity/security attributes, but does
-// not need the original maxAge.
 const clearCookieOptions = {
   httpOnly: true,
   secure: true,
@@ -103,9 +102,10 @@ router.post('/verify', requireTrustedOrigin, authLimiter, async (req, res) => {
       .json({ error: 'username, nonce, and signature are required' });
   }
 
-  // Check first without consuming it. A temporary Hive RPC failure must not
-  // permanently burn a valid login challenge.
-  if (!validateChallenge(username, nonce)) {
+  // Reserve the challenge rather than consuming it immediately. This keeps
+  // concurrent replays single-use while allowing infrastructure failures to
+  // release the nonce for a legitimate retry.
+  if (!claimChallenge(username, nonce)) {
     return res.status(401).json({ error: 'Challenge is invalid or expired' });
   }
 
@@ -119,9 +119,7 @@ router.post('/verify', requireTrustedOrigin, authLimiter, async (req, res) => {
     });
   } catch (err) {
     if (err instanceof HiveAccountNotFoundError) {
-      // Account-not-found is a decisive result, so this attempt is complete
-      // and the one-time challenge should be consumed.
-      if (!consumeChallenge(username, nonce)) {
+      if (!consumeClaimedChallenge(username, nonce)) {
         return res
           .status(401)
           .json({ error: 'Challenge is invalid or expired' });
@@ -131,7 +129,8 @@ router.post('/verify', requireTrustedOrigin, authLimiter, async (req, res) => {
     }
 
     if (err instanceof HiveRpcUnavailableError) {
-      // Infrastructure failure is retryable. Leave the nonce intact.
+      releaseChallenge(username, nonce);
+
       console.warn(
         'Hive RPC unavailable during login verification:',
         err.message
@@ -142,14 +141,15 @@ router.post('/verify', requireTrustedOrigin, authLimiter, async (req, res) => {
       });
     }
 
+    releaseChallenge(username, nonce);
+
     console.error('Login verification error:', err);
 
-    // Unknown infrastructure/internal error: do not burn the challenge.
     return res.status(500).json({ error: 'Verification failed' });
   }
 
   if (!signatureIsValid) {
-    if (!consumeChallenge(username, nonce)) {
+    if (!consumeClaimedChallenge(username, nonce)) {
       return res
         .status(401)
         .json({ error: 'Challenge is invalid or expired' });
@@ -158,22 +158,25 @@ router.post('/verify', requireTrustedOrigin, authLimiter, async (req, res) => {
     return res.status(401).json({ error: 'Signature verification failed' });
   }
 
-  // Claim the one-time challenge before creating a new token generation.
-  // This ensures concurrent replays cannot both advance token_version.
-  if (!consumeChallenge(username, nonce)) {
-    return res.status(401).json({ error: 'Challenge is invalid or expired' });
-  }
-
   let session;
 
   try {
+    // PostgreSQL failure is retryable. Keep the challenge claimed during the
+    // DB operation, consume it only after issuance succeeds, and release it
+    // if the DB operation fails.
     session = await issueSession(username);
   } catch (err) {
+    releaseChallenge(username, nonce);
+
     console.error('Session issuance error:', err);
 
     return res.status(503).json({
       error: 'Session service is temporarily unavailable. Please try again.',
     });
+  }
+
+  if (!consumeClaimedChallenge(username, nonce)) {
+    return res.status(401).json({ error: 'Challenge is invalid or expired' });
   }
 
   res.cookie(SESSION_COOKIE_NAME, session.token, cookieOptions);
@@ -260,9 +263,6 @@ router.post(
     } catch (err) {
       console.error('Session revocation error:', err);
 
-      // Always remove this browser's cookie even if the database is
-      // temporarily unavailable. Do not falsely claim durable revocation
-      // succeeded, though.
       res.clearCookie(SESSION_COOKIE_NAME, clearCookieOptions);
 
       return res.status(503).json({
