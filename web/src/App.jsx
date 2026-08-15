@@ -10,7 +10,6 @@ import LoginScreen from './components/LoginScreen'
 import './styles/tokens.css'
 import './App.css'
 
-
 function DailyPuzzle() {
   return (
     <div>
@@ -31,8 +30,16 @@ function NotFound() {
 }
 
 function AppShell() {
-  const { isAuthenticated, isLoading, sessionCheckError, retryCheckSession, logout, username } =
-    useAuth()
+  const {
+    isAuthenticated,
+    isLoading,
+    sessionCheckError,
+    retryCheckSession,
+    isLoggingOut,
+    logoutError,
+    logout,
+    username,
+  } = useAuth()
 
   if (isLoading) {
     return (
@@ -57,7 +64,11 @@ function AppShell() {
         </header>
         <main className="app-content">
           <p>Couldn't reach the server. Check your connection and try again.</p>
-          <button type="button" className="login-button" onClick={retryCheckSession}>
+          <button
+            type="button"
+            className="login-button"
+            onClick={retryCheckSession}
+          >
             Retry
           </button>
         </main>
@@ -83,23 +94,41 @@ function AppShell() {
     <div className="app-shell">
       <header className="app-header">
         <div className="app-logo">LINGO</div>
+
         <nav className="app-nav">
-          <NavLink to="/" end>Puzzle</NavLink>
+          <NavLink to="/" end>
+            Puzzle
+          </NavLink>
           <NavLink to="/results">Results</NavLink>
           <NavLink to="/leaderboard">Leaderboard</NavLink>
           <NavLink to="/profile">Profile</NavLink>
           <NavLink to="/wallet">Wallet</NavLink>
         </nav>
+
         <div className="app-header-actions">
           <span className="app-username">{username}</span>
-          <button type="button" className="logout-button" onClick={logout}>
-            Log out
+
+          <button
+            type="button"
+            className="logout-button"
+            onClick={logout}
+            disabled={isLoggingOut}
+            aria-busy={isLoggingOut}
+          >
+            {isLoggingOut ? 'Signing out...' : 'Log out'}
           </button>
+
           <ThemeToggle />
         </div>
       </header>
 
       <main className="app-content">
+        {logoutError && (
+          <p role="alert">
+            {logoutError}
+          </p>
+        )}
+
         <Routes>
           <Route path="/" element={<DailyPuzzle />} />
           <Route path="/results" element={<Results />} />
