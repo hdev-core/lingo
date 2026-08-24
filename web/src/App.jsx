@@ -5,6 +5,8 @@ import Leaderboard from './components/Leaderboard'
 import Profile from './components/Profile'
 import Wallet from './components/Wallet'
 import ThemeToggle from './components/ThemeToggle'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import LoginScreen from './components/LoginScreen'
 import './styles/tokens.css'
 import './App.css'
 
@@ -28,21 +30,105 @@ function NotFound() {
 }
 
 function AppShell() {
+  const {
+    isAuthenticated,
+    isLoading,
+    sessionCheckError,
+    retryCheckSession,
+    isLoggingOut,
+    logoutError,
+    logout,
+    username,
+  } = useAuth()
+
+  if (isLoading) {
+    return (
+      <div className="app-shell">
+        <header className="app-header app-header--minimal">
+          <div className="app-logo">LINGO</div>
+          <ThemeToggle />
+        </header>
+        <main className="app-content">
+          <p>Loading...</p>
+        </main>
+      </div>
+    )
+  }
+
+  if (sessionCheckError) {
+    return (
+      <div className="app-shell">
+        <header className="app-header app-header--minimal">
+          <div className="app-logo">LINGO</div>
+          <ThemeToggle />
+        </header>
+        <main className="app-content">
+          <p>Couldn't reach the server. Check your connection and try again.</p>
+          <button
+            type="button"
+            className="login-button"
+            onClick={retryCheckSession}
+          >
+            Retry
+          </button>
+        </main>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="app-shell">
+        <header className="app-header app-header--minimal">
+          <div className="app-logo">LINGO</div>
+          <ThemeToggle />
+        </header>
+        <main className="app-content">
+          <LoginScreen />
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="app-shell">
       <header className="app-header">
         <div className="app-logo">LINGO</div>
+
         <nav className="app-nav">
-          <NavLink to="/" end>Puzzle</NavLink>
+          <NavLink to="/" end>
+            Puzzle
+          </NavLink>
           <NavLink to="/results">Results</NavLink>
           <NavLink to="/leaderboard">Leaderboard</NavLink>
           <NavLink to="/profile">Profile</NavLink>
           <NavLink to="/wallet">Wallet</NavLink>
         </nav>
-        <ThemeToggle />
+
+        <div className="app-header-actions">
+          <span className="app-username">{username}</span>
+
+          <button
+            type="button"
+            className="logout-button"
+            onClick={logout}
+            disabled={isLoggingOut}
+            aria-busy={isLoggingOut}
+          >
+            {isLoggingOut ? 'Signing out...' : 'Log out'}
+          </button>
+
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className="app-content">
+        {logoutError && (
+          <p role="alert">
+            {logoutError}
+          </p>
+        )}
+
         <Routes>
           <Route path="/" element={<DailyPuzzle />} />
           <Route path="/results" element={<Results />} />
@@ -58,9 +144,11 @@ function AppShell() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <AppShell />
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <AppShell />
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 
