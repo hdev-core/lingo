@@ -44,7 +44,7 @@ jobs:
           username: ${{ secrets.HETZNER_SSH_USER }}
           key: ${{ secrets.HETZNER_SSH_KEY }}
 
-          fingerprint: SHA256:kdrSAjgZIEw8tQNHGl+ax+sr0vqI0VgqPKDRxERv/bw
+          fingerprint: SHA256:vNTEuyEtLoo/Ha7niDE2WRxjahvxMHbQcHdmXdy/Rqg
 
           envs: LINGO_PATH,DEPLOY_SHA,DATABASE_URL,DIRECT_URL,HIVE_APP_ACCOUNT,HIVE_APP_POSTING_KEY,SESSION_JWT_SECRET,ALLOWED_ORIGINS
 
