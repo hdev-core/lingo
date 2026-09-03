@@ -67,7 +67,7 @@ router.get('/puzzle/today', optionalAuth, async (req, res) => {
       }));
 
       payload.solved = payload.guesses.some(
-        (g) => Array.isArray(g.feedback) && g.feedback.every((s) => s === 'correct')
+        (g) => Array.isArray(g.feedback) && g.feedback.every((f) => f.state === 'correct')
       );
       payload.attemptsRemaining = Math.max(0, MAX_GUESSES - payload.guesses.length);
     }

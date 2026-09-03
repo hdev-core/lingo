@@ -11,11 +11,14 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
 // commit-reveal scheme. Feedback is computed server-side and returned as an
 // array of 'correct' | 'present' | 'absent', which we zip with the guessed
 // word for rendering.
-function toRow(word, feedback) {
-  return word
-    .toUpperCase()
-    .split('')
-    .map((letter, i) => ({ letter, status: feedback[i] }))
+function toRow(feedback) {
+  // The API returns [{ letter, state }] with lowercase letters; GuessGrid
+  // renders { letter, status }. Verified against a live response rather than
+  // assumed -- an earlier version of this mapped the wrong shape entirely.
+  return feedback.map(({ letter, state }) => ({
+    letter: letter.toUpperCase(),
+    status: state,
+  }))
 }
 
 const RANK = { absent: 0, present: 1, correct: 2 }
@@ -62,7 +65,7 @@ function Puzzle() {
         const data = await res.json()
         if (cancelled) return
 
-        const rows = (data.guesses || []).map((g) => toRow(g.word, g.feedback))
+        const rows = (data.guesses || []).map((g) => toRow(g.feedback))
         setPuzzle(data)
         setGuesses(rows)
         setLetterStatuses(lettersFromRows(rows))
@@ -98,7 +101,7 @@ function Puzzle() {
           return
         }
 
-        const row = toRow(word, data.feedback)
+        const row = toRow(data.feedback)
         const next = [...guesses, row]
         setGuesses(next)
         setCurrentGuess('')
