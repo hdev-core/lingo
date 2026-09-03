@@ -1,0 +1,67 @@
+name: Apply database migrations
+
+permissions:
+  contents: read
+
+"on":
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type APPLY to confirm running migrations against the live database'
+        required: true
+        default: ''
+
+concurrency:
+  group: lingo-db-migrate
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Guard
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "APPLY" ]; then
+            echo "Refusing to run: type APPLY to confirm."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - name: Install psql
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client >/dev/null
+
+      - name: Apply migrations in order
+        env:
+          # session pooler (5432) — transaction pooling cannot run DDL scripts reliably
+          PGURL: ${{ secrets.DIRECT_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PGURL}" ]; then echo "DIRECT_URL is empty"; exit 1; fi
+
+          echo "connectivity check..."
+          psql "${PGURL}" -Atc "select current_database()||' @ '||version();"
+
+          shopt -s nullglob
+          applied=0
+          for f in $(ls server/migrations/*.sql | sort); do
+            echo "──────── applying $(basename "$f")"
+            # ON_ERROR_STOP + single-transaction: a failing file rolls itself back
+            psql "${PGURL}" -v ON_ERROR_STOP=1 --single-transaction -q -f "$f"
+            applied=$((applied+1))
+          done
+          echo "applied ${applied} migration(s)"
+
+      - name: Verify schema
+        env:
+          PGURL: ${{ secrets.DIRECT_URL }}
+        run: |
+          psql "${PGURL}" -Atc "select tablename from pg_tables where schemaname='public' order by 1;" \
+            | sed 's/^/  table: /'
+          echo "--- row counts that matter ---"
+          psql "${PGURL}" -Atc "select 'words='||count(*) from words;" || true
+          psql "${PGURL}" -Atc "select 'daily_puzzles='||count(*) from daily_puzzles;" || true
