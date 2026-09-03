@@ -2,10 +2,16 @@ name: Daily Puzzle Reveal
 permissions:
   contents: read
 on:
-  schedule:
-    # Run after midnight UTC. The script selects the oldest eligible prior
-    # live puzzle from database state, not from the runner's wall-clock date.
-    - cron: "5 0 * * *"
+  # DISABLED 2026-09-03 — the frontend still plays a hardcoded local word and
+  # never fetches puzzles from the API, so scheduled runs would broadcast real
+  # commits to Hive mainnet for puzzles no player can see, consuming one answer
+  # from the bank per day. Re-enable by uncommenting the schedule block once the
+  # gameplay is wired to the backend. workflow_dispatch is left active so both
+  # jobs can still be run by hand for testing.
+  # schedule:
+  # # Run after midnight UTC. The script selects the oldest eligible prior
+  # # live puzzle from database state, not from the runner's wall-clock date.
+  # - cron: "5 0 * * *"
 
   workflow_dispatch:
 
