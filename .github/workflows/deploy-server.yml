@@ -38,6 +38,7 @@ jobs:
           HIVE_APP_POSTING_KEY: ${{ secrets.HIVE_APP_POSTING_KEY }}
           SESSION_JWT_SECRET: ${{ secrets.SESSION_JWT_SECRET }}
           ALLOWED_ORIGINS: ${{ vars.ALLOWED_ORIGINS }}
+          PUZZLE_WORD_LENGTHS: ${{ vars.PUZZLE_WORD_LENGTHS }}
 
         with:
           host: ${{ secrets.HETZNER_HOST }}
@@ -46,7 +47,7 @@ jobs:
 
           fingerprint: SHA256:vNTEuyEtLoo/Ha7niDE2WRxjahvxMHbQcHdmXdy/Rqg
 
-          envs: LINGO_PATH,DEPLOY_SHA,DATABASE_URL,DIRECT_URL,HIVE_APP_ACCOUNT,HIVE_APP_POSTING_KEY,SESSION_JWT_SECRET,ALLOWED_ORIGINS
+          envs: LINGO_PATH,DEPLOY_SHA,DATABASE_URL,DIRECT_URL,HIVE_APP_ACCOUNT,HIVE_APP_POSTING_KEY,SESSION_JWT_SECRET,ALLOWED_ORIGINS,PUZZLE_WORD_LENGTHS
 
           script: |
             bash -se <<'DEPLOY_SCRIPT'
@@ -107,7 +108,8 @@ jobs:
               "HIVE_ENGINE_NODE=https://api.hive-engine.com/rpc" \
               "LINGO_TOKEN_SYMBOL=LINGO" \
               "SESSION_JWT_SECRET=${SESSION_JWT_SECRET}" \
-              "ALLOWED_ORIGINS=${ALLOWED_ORIGINS}" > .env
+              "ALLOWED_ORIGINS=${ALLOWED_ORIGINS}" \
+              "PUZZLE_WORD_LENGTHS=${PUZZLE_WORD_LENGTHS}" > .env
 
             for required in DATABASE_URL DIRECT_URL HIVE_APP_ACCOUNT HIVE_APP_POSTING_KEY SESSION_JWT_SECRET ALLOWED_ORIGINS; do
               if ! grep -q "^${required}=." .env; then
