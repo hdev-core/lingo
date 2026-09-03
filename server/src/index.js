@@ -10,6 +10,7 @@ const cookieParser = require('cookie-parser');
 
 const authRoutes = require('./auth/routes');
 const guessRouter = require('./routes/guess');
+const puzzleRouter = require('./routes/puzzle');
 const verifyRouter = require('./routes/verify');
 const { allowedOrigins } = require('./lib/allowedOrigins');
 
@@ -43,6 +44,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api', puzzleRouter);
 app.use('/api', guessRouter);
 app.use('/api', verifyRouter);
 

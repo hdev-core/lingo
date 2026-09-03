@@ -17,26 +17,9 @@ const express = require('express');
 const { pool } = require('../db');
 const { getFeedback } = require('../game/wordFeedback');
 const { isValidGuess } = require('../game/validWords');
-const { verifySession } = require('../auth/session');
+const { requireAuth } = require('../auth/sessionFromRequest');
 
 const router = express.Router();
-
-function requireAuth(req, res, next) {
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-
-  if (!token) {
-    return res.status(401).json({ error: 'not authenticated' });
-  }
-
-  const { valid, username } = verifySession(token);
-  if (!valid || !username) {
-    return res.status(401).json({ error: 'invalid or expired session' });
-  }
-
-  req.hiveUsername = username;
-  next();
-}
 
 router.post('/guess', requireAuth, async (req, res) => {
   const hiveUsername = req.hiveUsername;
