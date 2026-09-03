@@ -1,0 +1,30 @@
+# Curated additions to the guess-validity list.
+#
+# The base dictionary (dwyl/english-words) is general English and omits both
+# crypto/Hive vocabulary and a few ordinary words. Anything seeded into the
+# `words` answer bank MUST also be guessable, or the puzzle is unwinnable --
+# the player cannot submit a word that isValidGuess() rejects.
+#
+# Lines starting with # are ignored. One lowercase word per line, 4-9 letters.
+dapp
+dapps
+hodl
+hodls
+defi
+bitcoin
+testnet
+mainnet
+hardfork
+softfork
+validator
+blockhash
+keychain
+upvote
+upvotes
+downvote
+resteem
+permlink
+memo
+memos
+altcoin
+altcoins

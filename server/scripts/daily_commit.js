@@ -25,6 +25,7 @@ const { broadcastCommit } =
 const { findLingoOperation } =
   require('../src/hive/haf');
 
+const { pickLengthForDate } = require('../src/game/wordLength');
 const {
   pickWordForDate,
   markWordUsed,
@@ -85,7 +86,7 @@ async function reserveOrResume(puzzleDate) {
       };
     }
 
-    const wordLength = 5;
+    const wordLength = pickLengthForDate(puzzleDate);
 
     const {
       id: wordId,
