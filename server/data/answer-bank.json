@@ -1,0 +1,546 @@
+[
+ {
+  "word": "hive",
+  "length": 4,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "coin",
+  "length": 4,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "fork",
+  "length": 4,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "mint",
+  "length": 4,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "nft",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "node",
+  "length": 4,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "swap",
+  "length": 4,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "defi",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "burn",
+  "length": 4,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "defi",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "defi",
+  "length": 4,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "defi",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "hodl",
+  "length": 4,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "dapp",
+  "length": 4,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "seed",
+  "length": 4,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "block",
+  "length": 5,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "token",
+  "length": 5,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "miner",
+  "length": 5,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "chain",
+  "length": 5,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "proof",
+  "length": 5,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "stake",
+  "length": 5,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "defi",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "vault",
+  "length": 5,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "defi",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "nonce",
+  "length": 5,
+  "difficulty": "hard",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "whale",
+  "length": 5,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "trade",
+  "length": 5,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "defi",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "asset",
+  "length": 5,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "defi",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "yield",
+  "length": 5,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "defi",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "audit",
+  "length": 5,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "relay",
+  "length": 5,
+  "difficulty": "hard",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "ledger",
+  "length": 6,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "wallet",
+  "length": 6,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "mining",
+  "length": 6,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "oracle",
+  "length": 6,
+  "difficulty": "hard",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "crypto",
+  "length": 6,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "escrow",
+  "length": 6,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "defi",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "faucet",
+  "length": 6,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "upvote",
+  "length": 6,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "memory",
+  "length": 6,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "digest",
+  "length": 6,
+  "difficulty": "hard",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "tokens",
+  "length": 6,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "bitcoin",
+  "length": 7,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "staking",
+  "length": 7,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "defi",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "network",
+  "length": 7,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "address",
+  "length": 7,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "witness",
+  "length": 7,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "account",
+  "length": 7,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "rewards",
+  "length": 7,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "airdrop",
+  "length": 7,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "nft",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "testnet",
+  "length": 7,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "mainnet",
+  "length": 7,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "encrypt",
+  "length": 7,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "deposit",
+  "length": 7,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "defi",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "contract",
+  "length": 8,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "exchange",
+  "length": 8,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "defi",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "transfer",
+  "length": 8,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "protocol",
+  "length": 8,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "delegate",
+  "length": 8,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "treasury",
+  "length": 8,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "defi",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "hardfork",
+  "length": 8,
+  "difficulty": "hard",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "currency",
+  "length": 8,
+  "difficulty": "easy",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "security",
+  "length": 8,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "permlink",
+  "length": 8,
+  "difficulty": "hard",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "softfork",
+  "length": 8,
+  "difficulty": "hard",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "consensus",
+  "length": 9,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "signature",
+  "length": 9,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "liquidity",
+  "length": 9,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "defi",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "immutable",
+  "length": 9,
+  "difficulty": "hard",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "timestamp",
+  "length": 9,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "delegated",
+  "length": 9,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "general",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "validator",
+  "length": 9,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "blockhash",
+  "length": 9,
+  "difficulty": "hard",
+  "category": "web3",
+  "theme": "advanced",
+  "source": "hive-glossary"
+ },
+ {
+  "word": "ownership",
+  "length": 9,
+  "difficulty": "medium",
+  "category": "web3",
+  "theme": "nft",
+  "source": "hive-glossary"
+ }
+]
