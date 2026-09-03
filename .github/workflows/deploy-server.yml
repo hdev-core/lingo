@@ -32,15 +32,21 @@ jobs:
         env:
           LINGO_PATH: ${{ secrets.HETZNER_LINGO_PATH }}
           DEPLOY_SHA: ${{ github.sha }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          HIVE_APP_ACCOUNT: ${{ secrets.HIVE_APP_ACCOUNT }}
+          HIVE_APP_POSTING_KEY: ${{ secrets.HIVE_APP_POSTING_KEY }}
+          SESSION_JWT_SECRET: ${{ secrets.SESSION_JWT_SECRET }}
+          ALLOWED_ORIGINS: ${{ vars.ALLOWED_ORIGINS }}
 
         with:
           host: ${{ secrets.HETZNER_HOST }}
           username: ${{ secrets.HETZNER_SSH_USER }}
           key: ${{ secrets.HETZNER_SSH_KEY }}
 
-          fingerprint: SHA256:CRHSMARNgnBQ7KUaDz+Tl9C/aFOSmQeI5GceF17mq2s
+          fingerprint: SHA256:kdrSAjgZIEw8tQNHGl+ax+sr0vqI0VgqPKDRxERv/bw
 
-          envs: LINGO_PATH,DEPLOY_SHA
+          envs: LINGO_PATH,DEPLOY_SHA,DATABASE_URL,DIRECT_URL,HIVE_APP_ACCOUNT,HIVE_APP_POSTING_KEY,SESSION_JWT_SECRET,ALLOWED_ORIGINS
 
           script: |
             bash -se <<'DEPLOY_SCRIPT'
@@ -65,10 +71,7 @@ jobs:
               npm ci --omit=dev
               mkdir -p logs
 
-              npx pm2 restart ecosystem.config.js --update-env || \
-                npx pm2 start ecosystem.config.js
-
-              npx pm2 save
+              sudo systemctl restart lingo
 
               echo "Rollback attempt finished."
               exit "$exit_code"
@@ -91,6 +94,28 @@ jobs:
               false
             fi
 
+            echo "Writing .env from CI secrets (no hand-placed file)..."
+            umask 077
+            printf '%s\n' \
+              "PORT=3001" \
+              "NODE_ENV=production" \
+              "DATABASE_URL=${DATABASE_URL}" \
+              "DIRECT_URL=${DIRECT_URL}" \
+              "HIVE_NETWORK=mainnet" \
+              "HIVE_APP_ACCOUNT=${HIVE_APP_ACCOUNT}" \
+              "HIVE_APP_POSTING_KEY=${HIVE_APP_POSTING_KEY}" \
+              "HIVE_ENGINE_NODE=https://api.hive-engine.com/rpc" \
+              "LINGO_TOKEN_SYMBOL=LINGO" \
+              "SESSION_JWT_SECRET=${SESSION_JWT_SECRET}" \
+              "ALLOWED_ORIGINS=${ALLOWED_ORIGINS}" > .env
+
+            for required in DATABASE_URL DIRECT_URL HIVE_APP_ACCOUNT HIVE_APP_POSTING_KEY SESSION_JWT_SECRET ALLOWED_ORIGINS; do
+              if ! grep -q "^${required}=." .env; then
+                echo "ERROR: ${required} resolved empty - check the repo secret/variable"
+                false
+              fi
+            done
+
             echo "Installing production dependencies..."
             npm ci --omit=dev
 
@@ -98,10 +123,7 @@ jobs:
 
             echo "Restarting API..."
 
-            npx pm2 restart ecosystem.config.js --update-env || \
-              npx pm2 start ecosystem.config.js
-
-            npx pm2 save
+            sudo systemctl restart lingo
 
             APP_PORT="$(
               node --env-file=.env -e "process.stdout.write(process.env.PORT || '3001')"
@@ -135,8 +157,8 @@ jobs:
             if [ "$HEALTHY" != "true" ]; then
               echo "ERROR: API did not become healthy."
 
-              npx pm2 status || true
-              npx pm2 logs lingo-server --lines 50 --nostream || true
+              sudo systemctl status lingo --no-pager || true
+              journalctl -u lingo -n 50 --no-pager || true
 
               false
             fi
