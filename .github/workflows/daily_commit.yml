@@ -2,15 +2,9 @@ name: Daily Puzzle Commit
 permissions:
   contents: read
 on:
-  # DISABLED 2026-09-03 — the frontend still plays a hardcoded local word and
-  # never fetches puzzles from the API, so scheduled runs would broadcast real
-  # commits to Hive mainnet for puzzles no player can see, consuming one answer
-  # from the bank per day. Re-enable by uncommenting the schedule block once the
-  # gameplay is wired to the backend. workflow_dispatch is left active so both
-  # jobs can still be run by hand for testing.
-  # schedule:
-  # # Every day at 00:00 UTC
-  # - cron: "0 0 * * *"
+  schedule:
+    # Every day at 00:00 UTC
+    - cron: "0 0 * * *"
 
   workflow_dispatch:
 
@@ -44,3 +38,4 @@ jobs:
           HIVE_NETWORK: mainnet
           HIVE_APP_ACCOUNT: ${{ secrets.HIVE_APP_ACCOUNT }}
           HIVE_APP_POSTING_KEY: ${{ secrets.HIVE_APP_POSTING_KEY }}
+          PUZZLE_WORD_LENGTHS: ${{ vars.PUZZLE_WORD_LENGTHS }}
